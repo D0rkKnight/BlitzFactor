@@ -16,10 +16,40 @@
   "contributes": {
     "commands": [
       {
-        "command": "blitzfactor.helloWorld",
-        "title": "Hello World"
+        "command": "blitzFactor.sidePreview",
+        "title": "BlitzFactor Side Preview"
       }
-    ]
+    ],
+    "customEditors": [
+			{
+				"viewType": "testEditors.txtEditor",
+				"displayName": "Test Editor",
+				"selector": [
+					{
+						"filenamePattern": "*.txt"
+					}
+				],
+        "priority": "option"
+			},
+      {
+        "viewType": "blitzEditors.blitzEditor",
+        "displayName": "BlitzEditor",
+        "selector": [
+          {
+            "filenamePattern": "*.js"
+          }
+        ]
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "blitzFactor.sidePreview",
+          "group": "navigation",
+          "when": "resourceLangId == javascript"
+        }
+      ]
+    }
   },
   "scripts": {
     "vscode:prepublish": "npm run package",
