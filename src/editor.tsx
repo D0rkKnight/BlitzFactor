@@ -1,39 +1,59 @@
-console.log(document)
-
-import HelloWorld from './export.js';
-
-console.log(HelloWorld());
-
-// import Json5 from 'json5';
-
 import * as React from "react";
 import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
+import { createRoot } from 'react-dom/client';
+import App from './App';
 
-export default function App() {
-  useEffect(() => {
-    // code to execute when the component is loaded
-    console.log('Component loaded!');
-  }, []);
+declare var acquireVsCodeApi: any;
+const vscode = acquireVsCodeApi();
 
-  function handleClick() {
-    // code to execute when the button is clicked
-    console.log('Button clicked!');
+// Export class for use in extension
+export default class Editor {
+  
+  // Create callback list (hook layer for vscode incoming data)
+  static tokenChangeCB: Function[] = []; 
+
+
+  static onUpdate(message: string) {
+    const tokens = this.tokenize(message);
+    this.redraw(tokens);
   }
+  
+  static tokenize(text: string): string[] {
+    const lines = text.split('\r');
+  
+    return lines;
+  }
+  
+  static redraw(tokens: string[]) {
+    Editor.tokenChangeCB.forEach(cb => cb(tokens));
+  }
+  
 
-  return (
-    <button onClick={handleClick}> Button!!! </button>
-    // Build a React component from methods
+  static writeText(text: string) {
 
+    console.log('Writing text to vscode: ' + text);
 
-  );
+    // Send message back to vscode
+    vscode.postMessage({
+      type: 'update',
+      text: text
+    });
+  }
 }
 
-console.log('testReactComponent.tsx loaded!');
-console.log(document.getElementById('app'));
-
-// Add app to DOM
-import { createRoot } from 'react-dom/client';
 const container = document.getElementById('app');
 const root = createRoot(container); // createRoot(container!) if you use TypeScript
 root.render(<App />);
+
+// Update display on update
+window.addEventListener('message', event => {
+  const message = event.data; // The JSON data our extension sent
+
+  switch (message.type) {
+      case 'update':
+          Editor.onUpdate(message.text);
+          break;
+  }
+});
+

@@ -29,7 +29,35 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
         text: document.getText(),
       });
     }
+
+	// Update web view on document change
+	const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+		if (e.document.uri.toString() === document.uri.toString()) {
+			updateWebview();
+		}
+	});
     
+	// Listen for messages from the webview
+	webviewPanel.webview.onDidReceiveMessage(e => {
+
+		console.log(e);
+
+		switch (e.type) {
+			case 'update':
+				const textEditor = vscode.window.activeTextEditor;
+				if (textEditor != null && textEditor.document.uri.toString() === document.uri.toString()) {
+					// Replace the text of the document
+					let edit = new vscode.WorkspaceEdit();
+					let firstLine = document.lineAt(0);
+					let lastLine = document.lineAt(document.lineCount - 1);
+					let range = new vscode.Range(firstLine.range.start, lastLine.range.end);
+					edit.replace(document.uri, range, e.text);
+					vscode.workspace.applyEdit(edit);
+				}
+			}
+		}
+	);
+
     // Print out hello!
     console.log('Blitz Editor accessed');
 
@@ -47,9 +75,6 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'media', 'style.css'));
-		
-		const reactUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'src', 'react', 'react.min.js'));
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
@@ -73,7 +98,6 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				<title>Cat Scratch</title>
 			</head>
 			<body>
-				<h1>Blitz Factor</h1>
 				<div id="app"></div>
 				
 				<script nonce="${nonce}" type="module" src="${scriptUri}"></script>
