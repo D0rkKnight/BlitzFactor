@@ -21,16 +21,6 @@
       }
     ],
     "customEditors": [
-			{
-				"viewType": "testEditors.txtEditor",
-				"displayName": "Test Editor",
-				"selector": [
-					{
-						"filenamePattern": "*.txt"
-					}
-				],
-        "priority": "option"
-			},
       {
         "viewType": "blitzEditors.blitzEditor",
         "displayName": "BlitzEditor",
