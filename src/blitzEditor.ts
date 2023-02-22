@@ -43,7 +43,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	private getHtmlForWebview(webview: vscode.Webview): string {
 		// Local path to script and css for the webview
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'src', 'script.tsx'));
+			this.context.extensionUri, 'dist', 'editor.js'));
 
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'media', 'style.css'));
@@ -72,7 +72,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			<body>
 				<h1>Blitz Factor</h1>
 				
-				<script nonce="${nonce}" src="${scriptUri}"></script>
+				<script nonce="${nonce}" type="module" src="${scriptUri}"></script>
 			</body>
 			</html>`;
 	}
