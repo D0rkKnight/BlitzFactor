@@ -1,0 +1,14 @@
+.flow-line {
+    background-color: #f5f5f5;
+    border: 1px solid #e5e5e5;
+    border-radius: 3px;
+    padding: 10px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+}
+
+.flow-line__text {
+    font-size: 14px;
+    line-height: 1.5;
+    color: #333;
+}

@@ -40,20 +40,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	// Listen for messages from the webview
 	webviewPanel.webview.onDidReceiveMessage(e => {
 
-		console.log(e);
-
 		switch (e.type) {
 			case 'update':
-				const textEditor = vscode.window.activeTextEditor;
-				if (textEditor != null && textEditor.document.uri.toString() === document.uri.toString()) {
-					// Replace the text of the document
-					let edit = new vscode.WorkspaceEdit();
-					let firstLine = document.lineAt(0);
-					let lastLine = document.lineAt(document.lineCount - 1);
-					let range = new vscode.Range(firstLine.range.start, lastLine.range.end);
-					edit.replace(document.uri, range, e.text);
-					vscode.workspace.applyEdit(edit);
-				}
+				this.updateTextDocument(document, e.text);
+				break;
+			case 'requestUpdate':
+				updateWebview();
 			}
 		}
 	);
@@ -74,7 +66,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			this.context.extensionUri, 'dist', 'editor.js'));
 
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'media', 'style.css'));
+			this.context.extensionUri, 'src/editor_frontend', 'style.css'));
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
@@ -104,6 +96,26 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			</body>
 			</html>`;
 	}
+
+		/**
+	 * Write out the json to a given document.
+	 */
+		private updateTextDocument(document: vscode.TextDocument, txt: string) {
+			const edit = new vscode.WorkspaceEdit();
+	
+			// Just replace the entire document every time for this example extension.
+			// A more complete extension should compute minimal edits instead.
+			edit.replace(
+				document.uri,
+				new vscode.Range(0, 0, document.lineCount, 0),
+				txt);
+				
+			// Print out entire document text
+			var outcome = vscode.workspace.applyEdit(edit)
+			console.log(document.getText());
+
+			return outcome;
+		}
 }
 
 exports.BlitzEditorProvider = BlitzEditorProvider;

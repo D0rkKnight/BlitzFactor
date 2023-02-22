@@ -81,7 +81,7 @@ const extensionConfig = {
 
 const browserConfig = {
   entry: {
-    'editor': './src/editor.tsx'
+    'editor': './src/editor_frontend/editor.tsx'
   },
 
   target: 'web',

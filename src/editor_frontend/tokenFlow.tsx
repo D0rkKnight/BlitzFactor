@@ -1,19 +1,22 @@
 import * as React from "react";
 import Editor from "./editor";
+import FlowLine from "./lineElement";
 
 export default function TokenFlow({children}) {
 
-    const [tokens, setTokens] = React.useState(['Line 1', 'Line 2']);
+    const [tokens, setTokens] = React.useState(['Loading elements!']);
 
     React.useEffect(() => {
 
     }, [tokens]);
 
     function addLine() {
-        setTokens([...tokens, 'New Line']);
+        var newTokens = [...tokens, 'New Line'];
+
+        setTokens(newTokens);
         
         // Tokens is input here
-        Editor.writeText(tokens.join('\r'));
+        Editor.writeText(newTokens.join('\r'));
     }
 
     function onUpdate(tokens: string[]) {
@@ -27,11 +30,11 @@ export default function TokenFlow({children}) {
         <p> Token Flow Begins Here</p>
         <button onClick={addLine}> Click to Add line!</button>
 
-        <ul>
+        <div>
             {tokens.map((token, index) => {
-                return <li key={index}>{token}</li>
+                return <FlowLine line={index}>{token}</FlowLine>
             })}
-        </ul>
+        </div>
 
         ${children}
     </div>

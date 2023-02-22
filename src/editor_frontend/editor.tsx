@@ -3,6 +3,7 @@ import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+import FlowLine from "./lineElement";
 
 declare var acquireVsCodeApi: any;
 const vscode = acquireVsCodeApi();
@@ -12,11 +13,17 @@ export default class Editor {
   
   // Create callback list (hook layer for vscode incoming data)
   static tokenChangeCB: Function[] = []; 
-
+  static selectedLine: FlowLine;
 
   static onUpdate(message: string) {
     const tokens = this.tokenize(message);
     this.redraw(tokens);
+  }
+
+  static requestUpdate() {
+    vscode.postMessage({
+      type: 'requestUpdate'
+    });
   }
   
   static tokenize(text: string): string[] {
@@ -31,8 +38,6 @@ export default class Editor {
   
 
   static writeText(text: string) {
-
-    console.log('Writing text to vscode: ' + text);
 
     // Send message back to vscode
     vscode.postMessage({
@@ -57,3 +62,5 @@ window.addEventListener('message', event => {
   }
 });
 
+// Load everything now
+Editor.requestUpdate();
