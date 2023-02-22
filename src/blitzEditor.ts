@@ -47,6 +47,9 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'media', 'style.css'));
+		
+		const reactUri = webview.asWebviewUri(vscode.Uri.joinPath(
+			this.context.extensionUri, 'src', 'react', 'react.min.js'));
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
@@ -71,6 +74,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			</head>
 			<body>
 				<h1>Blitz Factor</h1>
+				<div id="app"></div>
 				
 				<script nonce="${nonce}" type="module" src="${scriptUri}"></script>
 			</body>

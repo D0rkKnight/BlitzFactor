@@ -1,8 +1,10 @@
 console.log(document)
 
-import HelloWorld from './export';
+import HelloWorld from './export.js';
 
-HelloWorld();
+console.log(HelloWorld());
+
+// import Json5 from 'json5';
 
 import * as React from "react";
 import { useEffect } from 'react';
@@ -21,6 +23,9 @@ export default function App() {
 
   return (
     <button onClick={handleClick}> Button!!! </button>
+    // Build a React component from methods
+
+
   );
 }
 
@@ -28,4 +33,7 @@ console.log('testReactComponent.tsx loaded!');
 console.log(document.getElementById('app'));
 
 // Add app to DOM
-// ReactDOM.render(<App />, document.getElementById('app'));
+import { createRoot } from 'react-dom/client';
+const container = document.getElementById('app');
+const root = createRoot(container); // createRoot(container!) if you use TypeScript
+root.render(<App />);
