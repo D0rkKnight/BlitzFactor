@@ -3,7 +3,9 @@ import { useEffect } from 'react';
 import * as ReactDOM from 'react-dom';
 import { createRoot } from 'react-dom/client';
 import App from './App';
+
 import FlowLine from "./lineElement";
+import { LineHandle } from "./lineElement";
 
 declare var acquireVsCodeApi: any;
 const vscode = acquireVsCodeApi();
@@ -13,7 +15,7 @@ export default class Editor {
   
   // Create callback list (hook layer for vscode incoming data)
   static tokenChangeCB: Function[] = []; 
-  static selectedLine: Function;
+  static selectedLine: LineHandle | null = null;
 
   static onUpdate(message: string) {
     const tokens = this.tokenize(message);
