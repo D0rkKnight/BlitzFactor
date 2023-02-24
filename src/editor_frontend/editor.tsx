@@ -13,7 +13,7 @@ export default class Editor {
   
   // Create callback list (hook layer for vscode incoming data)
   static tokenChangeCB: Function[] = []; 
-  static selectedLine: FlowLine;
+  static selectedLine: Function;
 
   static onUpdate(message: string) {
     const tokens = this.tokenize(message);

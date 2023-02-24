@@ -32,7 +32,7 @@ export default function TokenFlow({children}) {
 
         <div>
             {tokens.map((token, index) => {
-                return <FlowLine line={index}>{token}</FlowLine>
+                return <FlowLine line={index} color="blue">{token}</FlowLine> // Weird default value issue?
             })}
         </div>
 
