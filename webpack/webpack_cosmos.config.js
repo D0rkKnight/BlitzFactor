@@ -5,6 +5,7 @@
 const path = require('path');
 const { merge } = require('webpack-merge');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 
 //@ts-check
@@ -55,9 +56,6 @@ const extensionConfig = {
         use: [
           {
             loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env', '@babel/preset-react']
-            }
           },
           {
             loader: 'ts-loader'
@@ -67,11 +65,18 @@ const extensionConfig = {
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
+      },
+      {
+        test: /\.jsx$/,
+        exclude: /node_modules/,
+        use: {loader: "babel-loader"}
       }
     ]
   },
   plugins: [
     new NodePolyfillPlugin(),
+    // new HtmlWebpackPlugin({template: path.resolve(__dirname, '../src/editor_frontend/cosmos/_renderer.html')})
+    new HtmlWebpackPlugin()
   ],
   devtool: 'nosources-source-map',
   infrastructureLogging: {
@@ -90,17 +95,4 @@ const browserConfig = {
   },
 };
 
-const nodeConfig = {
-  entry: {
-    'extension': './src/extension.ts',
-  },
-
-  target: 'node',
-  output: {
-    libraryTarget: 'commonjs2',
-  },
-};
-
-module.exports = [merge(extensionConfig, browserConfig), merge(extensionConfig, nodeConfig)];
-
-// module.exports = merge(extensionConfig, browserConfig);
+module.exports = merge(extensionConfig, browserConfig);

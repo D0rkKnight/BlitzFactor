@@ -1,14 +1,21 @@
-import * as React from "react";
-import { useEffect } from 'react';
-import * as ReactDOM from 'react-dom';
-import { createRoot } from 'react-dom/client';
-import App from './App';
 
-import FlowLine from "./lineElement";
 import { LineHandle } from "./lineElement";
 
 declare var acquireVsCodeApi: any;
-const vscode = acquireVsCodeApi();
+
+var vscode: any;
+
+if (typeof acquireVsCodeApi !== 'undefined') {
+  vscode = acquireVsCodeApi();
+}
+else {
+  console.log('acquireVsCodeApi not found, creating mock');
+  vscode = {
+    postMessage: (message: any) => {
+      console.log('Mock postMessage', message);
+    }
+  }
+}
 
 // Export class for use in extension
 export default class Editor {
@@ -48,21 +55,3 @@ export default class Editor {
     });
   }
 }
-
-const container = document.getElementById('app');
-const root = createRoot(container); // createRoot(container!) if you use TypeScript
-root.render(<App />);
-
-// Update display on update
-window.addEventListener('message', event => {
-  const message = event.data; // The JSON data our extension sent
-
-  switch (message.type) {
-      case 'update':
-          Editor.onUpdate(message.text);
-          break;
-  }
-});
-
-// Load everything now
-Editor.requestUpdate();
