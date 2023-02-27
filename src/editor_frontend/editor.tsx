@@ -1,5 +1,4 @@
-
-import { TokenHandle } from "./token";
+import {TokenHook} from './tokenHook';
 
 declare var acquireVsCodeApi: any;
 
@@ -22,7 +21,7 @@ export default class Editor {
   
   // Create callback list (hook layer for vscode incoming data)
   static tokenChangeCB: Function[] = []; 
-  static selectedLine: TokenHandle | null = null;
+  static selectedLines: TokenHook[] = [];
 
   // This is pretty important
   static tokenState = {
@@ -59,24 +58,31 @@ export default class Editor {
     });
   }
 
-  static setSelectedLine(line: TokenHandle | null) {
-    if (this.selectedLine != null && line != null && this.selectedLine.id === line.id)
+  static setSelectedLine(line: TokenHook, multiSelect: boolean = false) {
+    if (this.selectedLines.includes(line))
       return;
 
-    if (Editor.selectedLine)
-      Editor.selectedLine.deselect();
-      
-    this.selectedLine = line;
+    if (!multiSelect){
+      // Deselect all other lines
+      this.selectedLines.forEach(l => {
+        l.deselect();
+      });
+
+      this.selectedLines = [line];
+    }
+    else
+      this.selectedLines.push(line);
   }
 
-  static swapLines(line1: number, line2: number) {
-    if (line1 === line2)
+  static moveLine(from: number, to: number) {
+    if (from === to)
       return;
 
-    const tokens = this.tokenState.tokens;
-    const temp = tokens[line1];
-    tokens[line1] = tokens[line2];
-    tokens[line2] = temp;
+    // Move token and shift everything else
+    const tokens = Editor.tokenState.tokens;
+    const token = tokens[from];
+    tokens.splice(from, 1);
+    tokens.splice(to, 0, token);
 
     this.redraw(tokens);
     this.writeText(tokens.join('\r'));
@@ -84,7 +90,7 @@ export default class Editor {
 
   static addLine() {
     const tokens = Editor.tokenState.tokens;
-    tokens.push('New Line');
+    tokens.push('New Line, id '+Editor.nextID);
     Editor.redraw(tokens);
     Editor.writeText(tokens.join('\r'));
   }

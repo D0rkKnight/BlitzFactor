@@ -13,16 +13,10 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 /** @type WebpackConfig */
 const extensionConfig = {
-  // target: 'node', // VS Code extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
-  // entry: {
-  //   'extension': './src/extension.ts', 
-  //   'editor': './src/editor.js',
-  // },
   output: {
-    // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'cosmos_dist'),
     filename: '[name].js',
     libraryTarget: 'commonjs2'
   },
@@ -75,7 +69,6 @@ const extensionConfig = {
   },
   plugins: [
     new NodePolyfillPlugin(),
-    // new HtmlWebpackPlugin({template: path.resolve(__dirname, '../src/editor_frontend/cosmos/_renderer.html')})
     new HtmlWebpackPlugin()
   ],
   devtool: 'nosources-source-map',

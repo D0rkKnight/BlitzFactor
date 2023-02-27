@@ -5,15 +5,12 @@ import {ItemTypes} from "./constants";
 import {useDrag} from "react-dnd";
 import {useDrop} from "react-dnd";
 import {useRef} from "react";
-
-export interface TokenHandle {
-  deselect: Function;
-  id: number;
-}
+import { TokenHook } from "./tokenHook";
 
 interface DragItem {
   line: number;
 }
+
 
 export default function Token({ children, id, line, color = "blue"}) {
   const ref = useRef<HTMLDivElement>(null)
@@ -34,22 +31,18 @@ export default function Token({ children, id, line, color = "blue"}) {
       drop: (item: DragItem, monitor) => {
 
         // Swap lines
-        Editor.swapLines(line, item.line);
+        Editor.moveLine(item.line, line);
       }
     })
   );
-  
-  // Just a callback object, gets regenerated every render
-  var lineHandle = {
-    deselect: function() {
-      setState({ hovered: false, selected: false });
-    },
-    id: id, // Use ID for actual line comparison
-  } as TokenHandle;
 
   function onLineClick() {
     setState({ ...state, selected: true });
-    Editor.setSelectedLine(lineHandle);
+    Editor.setSelectedLine({
+      deselect: () => {
+        setState({ ...state, selected: false });
+      }
+    });
   };
 
   function setHover(val: boolean) {
@@ -78,7 +71,6 @@ export default function Token({ children, id, line, color = "blue"}) {
       return "white";
     }
   };
-
 
   const style = {
     backgroundColor: getBGCol(),
