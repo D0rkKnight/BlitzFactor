@@ -2,7 +2,7 @@ import * as React from "react";
 import Editor from "./editor";
 import Token from "./token";
 
-export default function TokenFlow({tokens}) {
+export default function TokenFlow({tokens, selectedLines}) {
     return (
     <div>
         <p> Token Flow Begins Here</p>
@@ -10,7 +10,11 @@ export default function TokenFlow({tokens}) {
 
         <div>
             {tokens.map((token, index) => {
-                return <Token key={index} id={Editor.getTokenID()} line={index} color="blue">{token}</Token> // Weird default value issue?
+                var selected = selectedLines.includes(index);
+
+                console.log("Selected: " + selected)
+
+                return <Token key={index} id={Editor.getTokenID()} line={index} color="blue" selected={selected}>{token}</Token> // Weird default value issue?
             })}
         </div>
     </div>

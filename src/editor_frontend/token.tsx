@@ -5,16 +5,15 @@ import {ItemTypes} from "./constants";
 import {useDrag} from "react-dnd";
 import {useDrop} from "react-dnd";
 import {useRef} from "react";
-import { TokenHook } from "./tokenHook";
 
 interface DragItem {
   line: number;
 }
 
 
-export default function Token({ children, id, line, color = "blue"}) {
+export default function Token({ children, id, line, color = "blue", selected=false}) {
   const ref = useRef<HTMLDivElement>(null)
-  const [state, setState] = React.useState({ selected: false, hovered: false });
+  const [state, setState] = React.useState({ hovered: false });
 
   const [{isDragging}, drag] = useDrag(() => ({
       type: ItemTypes.TOKEN,
@@ -37,12 +36,7 @@ export default function Token({ children, id, line, color = "blue"}) {
   );
 
   function onLineClick() {
-    setState({ ...state, selected: true });
-    Editor.setSelectedLine({
-      deselect: () => {
-        setState({ ...state, selected: false });
-      }
-    });
+    Editor.selectLine(line);
   };
 
   function setHover(val: boolean) {
@@ -61,11 +55,9 @@ export default function Token({ children, id, line, color = "blue"}) {
   };
 
   function getBGCol() {
-    console.log(state)
-    
     if (state.hovered) {
       return "lightblue";
-    } else if (state.selected) {
+    } else if (selected) {
       return "lightgreen";
     } else {
       return "white";
