@@ -1,13 +1,13 @@
 import React from "react";
 import App from "../App";
 import FlowLine from "../lineElement";
+import TokenFlow from "../tokenFlow";
 import './../style.css'
 
 export default {
     Line: (
         <span>
-            <FlowLine line="1">Test Line</FlowLine>
-            <FlowLine line="2">Test Line 2</FlowLine>
+            <TokenFlow initTokens={["Line 1", "Line 2"]} />
         </span>
     )
 }

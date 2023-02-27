@@ -2,9 +2,9 @@ import * as React from "react";
 import Editor from "./editor";
 import FlowLine from "./lineElement";
 
-export default function TokenFlow({children}) {
+export default function TokenFlow({children, initTokens = []}) {
 
-    const [tokens, setTokens] = React.useState(['Loading elements!']);
+    const [tokens, setTokens] = React.useState(initTokens as string[]);
 
     React.useEffect(() => {
 
