@@ -1,6 +1,6 @@
 import React from "react";
 import App from "../App";
-import FlowLine from "../lineElement";
+import Token from "../token";
 import TokenFlow from "../tokenFlow";
 import './../style.css'
 
