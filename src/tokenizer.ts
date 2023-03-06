@@ -54,8 +54,8 @@ export default class MyTokenizer {
             "type": this.WASMTypeToTokenType(node.type),
             "start": node.startPosition,
             "end": node.endPosition,
+            "text": node.text,
             "children": [] as any[],
-            "text": node.text
         };
 
         for (let i = 0; i < node.childCount; i++) {

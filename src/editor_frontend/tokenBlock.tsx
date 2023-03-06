@@ -11,7 +11,7 @@ interface DragItem {
 }
 
 
-export default function TokenBlock({ children, id, line, color = "blue", selected=false, tree}) {
+export default function TokenBlock({id, line, color = "blue", selected=false, tree}) {
   const ref = useRef<HTMLDivElement>(null)
   const [state, setState] = React.useState({ hovered: false });
 
@@ -66,16 +66,75 @@ export default function TokenBlock({ children, id, line, color = "blue", selecte
 
   const style = {
     backgroundColor: getBGCol(),
+
+    // Horizontal flexbox
+    display: "flex",
+    // flexDirection: "row",
   };
 
-  let subtree = "";
+  let trailingBlocks: JSX.Element[] = [];
+  let inlineBlocks: JSX.Element[] = [];
+  let text = "";
 
-  if (tree.children.length > 0)
-    subtree = tree.children.map((child, index) => {
-      return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} >{child.text}</TokenBlock> // Weird default value issue?
-    })
+  if (tree.children.length > 0) {
+    // subtree = tree.children.map((child, index) => {
+    //   return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} /> // Weird default value issue?
+    
+
+    // });
+    
+    // Check end lines of every subtree element
+    let vertPointer = tree['start']['row'];
+    let blockedSubtree = [[] as any[]];
+    let inlineSubtree: any[] = [];
+
+    for (let i = 0; i < tree.children.length; i++) {
+      const childStartLine = tree.children[i]['start']['row'];
+
+      // Load to the inline span first
+      if (childStartLine === tree['start']['row']) {
+        inlineSubtree.push(tree.children[i]);
+        continue;
+      }
+
+      if (childStartLine > vertPointer) {
+        vertPointer = childStartLine;
+        blockedSubtree.push([] as any[]);
+      }
+
+      // Push the child to the last array
+      blockedSubtree[blockedSubtree.length - 1].push(tree.children[i]);
+    }
+
+    inlineBlocks = inlineSubtree.map((child, index) => {
+      return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} />
+    });
+
+    trailingBlocks = blockedSubtree.map((subtree, index) => {
+
+      let innerElements = subtree.map((child, index) => {
+        return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} />
+      });
+
+      if (index === 0) {
+        // Return a span instead for the first element since 
+      }
+
+      return <div className="flow-line__subtree" key={index}>
+        {innerElements}
+      </div>
+    });
+  }
+  else {
+
+    // Only display text if it's a leaf
+    text = tree.text;
+  }
+
+
 
 //   drag(drop(ref)); // Hooks up refs to drag and drop
+
   return (
     <div
       className="flow-line"
@@ -86,12 +145,9 @@ export default function TokenBlock({ children, id, line, color = "blue", selecte
 
       ref={ref}
     >
-      <div className="flow-line__line" style={{ borderColor: color }}></div>
-      <div className="flow-line__text">
-        {line}: {children}
-
-        {subtree}
-      </div>
+      {text}
+      {inlineBlocks}
+      {trailingBlocks}
     </div>
   );
 }
