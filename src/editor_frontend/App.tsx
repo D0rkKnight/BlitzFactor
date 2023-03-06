@@ -5,30 +5,37 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import Editor from './editor';
+import TokenBlock from "./tokenBlock";
 
 export default function App() {
-  const [tokens, setTokens] = React.useState([] as string[]);
+  const [tokens, setTokens] = React.useState({});
+  const [dataLoaded, setDataLoaded] = React.useState(false);
   const [selectedLines, setSelectedLines] = React.useState([] as number[]);
 
   React.useEffect(() => {
-    Editor.tokenChangeCB.push((newTokens: string[]) => {
-      var cloned = newTokens.slice();
+    Editor.tokenChangeCB.push((newTokens: any) => {
+      // var cloned = newTokens.slice();
+
+      // TODO: Perform a deep copy
+      var cloned = newTokens;
       setTokens(cloned);
-    });
-    Editor.lineSelectChangeCB.push((newSelectedLines: number[]) => {
-      var cloned = newSelectedLines.slice();
-      setSelectedLines(cloned);
-    })
-
-    // Put in key listeners for editor
-    document.addEventListener('keydown', (event) => {
-      Editor.onKeyPress(event);
+      setDataLoaded(true);
     });
 
-    // Put in key listeners for editor
-    document.addEventListener('keyup', (event) => {
-      Editor.onKeyUp(event);
-    });
+    // Editor.lineSelectChangeCB.push((newSelectedLines: number[]) => {
+    //   var cloned = newSelectedLines.slice();
+    //   setSelectedLines(cloned);
+    // })
+
+    // // Put in key listeners for editor
+    // document.addEventListener('keydown', (event) => {
+    //   Editor.onKeyPress(event);
+    // });
+
+    // // Put in key listeners for editor
+    // document.addEventListener('keyup', (event) => {
+    //   Editor.onKeyUp(event);
+    // });
 
     // Update display on update
     window.addEventListener('message', event => {
@@ -36,7 +43,7 @@ export default function App() {
 
       switch (message.type) {
           case 'update':
-              Editor.onUpdate(message.text);
+              Editor.onUpdate(message.tree);
               break;
       }
     });
@@ -46,9 +53,17 @@ export default function App() {
 
   }, []);
 
+  let treeBlock = <p> Loading... </p>;
+  if (dataLoaded) {
+    treeBlock = <TokenBlock id={Editor.getTokenID()} tree={tokens} line />;
+  }
+
   return (
     <DndProvider backend={HTML5Backend}>
-      <TokenFlow tokens={tokens} selectedLines={selectedLines}/>
+      {treeBlock}
+
+      <p> This works at least </p>
+      {JSON.stringify(tokens)}
     </DndProvider>
   );
 }

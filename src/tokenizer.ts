@@ -1,4 +1,5 @@
 import * as path from 'path';
+import * as tempTree from './editor_frontend/cosmos/sampleTokens';
 
 enum TokenType {
     identifier,
@@ -11,8 +12,13 @@ enum TokenType {
 export default class MyTokenizer {
 
     static parser = null as any;
+    static context = null as any;
+    static tokenizerReady = false;
 
     static initialize(context: any) {
+        if (this.parser) return;
+        this.context = context;
+
         let Parser = require('web-tree-sitter');
 
         Parser.init().then(() => {
@@ -24,6 +30,8 @@ export default class MyTokenizer {
                 if (this.parser) {
                     this.parser.setLanguage(language);
                     console.log("Parser initialized with language")
+
+                    this.tokenizerReady = true;
                 }
                 else
                     console.log("Parser not initialized");
@@ -32,10 +40,14 @@ export default class MyTokenizer {
     }
 
 
-    static tokenize(context: any, text: string): any {
+    static tokenize(text: string): any {
         
-        if (!this.parser)
-            throw new Error("Parser not initialized");
+        if (!this.tokenizerReady) {
+            console.log("Parser not initialized, awaiting initialization");
+            console.log("Take this temporary JSON for now");
+
+            return tempTree;
+        }
 
         let tree = this.parser.parse(text);
         console.log(tree.rootNode.toString());

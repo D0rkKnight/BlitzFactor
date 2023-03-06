@@ -27,9 +27,13 @@ export default class Editor {
     tokens: [] as string[]
   };
 
-  static onUpdate(message: string) {
-    this.tokenState.tokens = this.tokenize(message);
-    this.redraw(this.tokenState.tokens);
+  // static onUpdate(message: string) {
+  //   this.tokenState.tokens = this.tokenize(message);
+  //   this.redraw(this.tokenState.tokens);
+  // }
+
+  static onUpdate(message: any) {
+    this.redraw(message);
   }
 
   static requestUpdate() {
@@ -38,13 +42,13 @@ export default class Editor {
     });
   }
   
-  static tokenize(text: string): string[] {
-    const lines = text.split('\r');
+  // static tokenize(text: string): string[] {
+  //   const lines = text.split('\r');
   
-    return lines;
-  }
+  //   return lines;
+  // }
   
-  static redraw(tokens: string[]) {
+  static redraw(tokens: any) {
     Editor.tokenChangeCB.forEach(cb => cb(tokens));
   }
 

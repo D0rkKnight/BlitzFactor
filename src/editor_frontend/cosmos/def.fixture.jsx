@@ -14,5 +14,5 @@ export default {
     App: <App />,
     Line: <DndProvider backend={HTML5Backend}><Token line="10">Test Line</Token></DndProvider>,
 
-    TokenBlock: <TokenBlock id={Editor.getTokenID()} tree={tree} />
+    TokenBlock: <TokenBlock id={Editor.getTokenID()} tree={tree} line />
 }
