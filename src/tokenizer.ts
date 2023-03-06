@@ -1,19 +1,25 @@
-// import PJavaScript = require("tree-sitter-javascript");
+import * as path from 'path';
 
 export default class Tokenizer {
 
-    static tokenize(text: string): any {
+    static tokenize(context: any, text: string): any {
         
         console.log("Tokenizing input!")
         
-        let Parser = require("tree-sitter");
-        
-        // const parser = new Parser();
-        // parser.setLanguage(PJavaScript);
+        let Parser = require('web-tree-sitter');
 
-        // const tree = parser.parse(text);
+        Parser.init().then(() => {
+            let parser = new Parser();
 
-        // console.log(tree)
+            let grammarPath = context.asAbsolutePath(path.join('src', 'grammars', 'tree-sitter-javascript.wasm'));
+
+            Parser.Language.load(grammarPath).then((js) => {
+                parser.setLanguage(js);
+
+                let tree = parser.parse(text);
+                console.log(tree.rootNode.toString());
+            });
+        });
 
     }
 

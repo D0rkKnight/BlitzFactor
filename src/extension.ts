@@ -72,7 +72,7 @@ export function activate(context: vscode.ExtensionContext) {
 
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.printAST', () => {
 
-		Tokenizer.tokenize(vscode.window.activeTextEditor?.document.getText() as string);
+		Tokenizer.tokenize(context, vscode.window.activeTextEditor?.document.getText() as string);
 
 	}));
 }
