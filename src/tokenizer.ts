@@ -6,6 +6,7 @@ enum TokenType {
     function_declaration,
     formal_parameters,
     statement_block,
+    punctuation,
     other
 }
 
@@ -50,12 +51,15 @@ export default class MyTokenizer {
         }
 
         let tree = this.parser.parse(text);
-        console.log(tree.rootNode.toString());
+        // console.log(tree.rootNode.toString());
 
         let json = this.WASMtoJSON(tree.rootNode, text);
-        console.log(JSON.stringify(json, null, 2));
+        // console.log(JSON.stringify(json, null, 2));
 
-        return json;
+        let condensed = this.condenseJSON(json);
+        console.log(JSON.stringify(condensed, null, 2));
+
+        return condensed;
 
     }
 
@@ -64,6 +68,7 @@ export default class MyTokenizer {
 
         let json = {
             "type": this.WASMTypeToTokenType(node.type),
+            "rawType": node.type,
             "start": node.startPosition,
             "end": node.endPosition,
             "text": node.text,
@@ -89,8 +94,51 @@ export default class MyTokenizer {
                 return TokenType.formal_parameters;
             case "statement_block":
                 return TokenType.statement_block;
+            case "(":
+            case ")":
+            case "{":
+            case "}":
+            case ";":
+            case ",":
+            case ".":
+            case "[":
+            case "]":
+                return TokenType.punctuation;
             default:
                 return TokenType.other;
         }
+    }
+
+    private static condenseJSON(json: any) {
+
+        // Condense function headers for example into a single node
+        // Cuz it turns out that visual blocking is not the same as code blocking
+
+        let newJson = {... json};
+        newJson['children'] = [];
+
+        // Delete all punctuation (punctuation are leaf nodes so we can just cull them)
+        // TODO: perform the culling on the frontend
+        // if (json['type'] == TokenType.punctuation)
+        //     return null;
+
+        for (let i = 0; i < json['children'].length; i++) {
+            let child = json['children'][i];
+
+            let newChild = this.condenseJSON(child);
+
+            if (newChild != null)
+                newJson['children'].push(newChild);
+        }
+
+        // Recalculate start and end positions since deleting leaf nodes may shift our bounds
+
+        // TODO: Don't do this this is asking for trouble
+        // if (newJson['children'].length > 0) {
+        //     newJson['start'] = newJson['children'][0]['start'];
+        //     newJson['end'] = newJson['children'][newJson['children'].length - 1]['end'];
+        // }
+
+        return newJson;
     }
 }

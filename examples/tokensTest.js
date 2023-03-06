@@ -1,3 +1,3 @@
-var x = 1
-var y = 2
-var z = x + y
+function HelloWorld() {
+  return "Hello World!"
+}
