@@ -20,15 +20,6 @@ export default class MyTokenizer {
                 return tree;
             });
         });
-
+        
     }
-
-    private static processWASMTree(tree: any): any {
-
-        // Go through and grab indices, types, children, and text
-
-
-
-    }
-
 }
