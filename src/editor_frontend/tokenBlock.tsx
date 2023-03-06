@@ -66,7 +66,7 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
 
   
   let trailingBlocks: (JSX.Element | null | undefined) [] = [];
-  let inlineBlocks: JSX.Element[] = [];
+  // let inlineBlocks: JSX.Element[] = [];
   let text: JSX.Element | null = null;
   
   if (tree.children.length > 0) {
@@ -79,16 +79,16 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
     // Check end lines of every subtree element
     let vertPointer = tree['start']['row'];
     let blockedSubtree = [[] as any[]];
-    let inlineSubtree: any[] = [];
+    // let inlineSubtree: any[] = [];
 
     for (let i = 0; i < tree.children.length; i++) {
       const childStartLine = tree.children[i]['start']['row'];
       
-      // Load to the inline span first
-      if (childStartLine === tree['start']['row']) {
-        inlineSubtree.push(tree.children[i]);
-        continue;
-      }
+      // // Load to the inline span first
+      // if (childStartLine === tree['start']['row']) {
+      //   inlineSubtree.push(tree.children[i]);
+      //   continue;
+      // }
       
       if (childStartLine > vertPointer) {
         vertPointer = childStartLine;
@@ -99,9 +99,9 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
       blockedSubtree[blockedSubtree.length - 1].push(tree.children[i]);
     }
     
-    inlineBlocks = inlineSubtree.map((child, index) => {
-      return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} />
-    });
+    // inlineBlocks = inlineSubtree.map((child, index) => {
+    //   return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} />
+    // });
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       
@@ -113,7 +113,7 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
       return null;
       
       return (
-        <div className="flow-line__subtree" key={index}>
+        <div className="flow-inline" key={index}>
           {innerElements}
         </div>
       )
@@ -143,10 +143,10 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
     
     ref={ref}
     >
-      {/* These are inline */}
+      {/* These are inline, note that there will never be a text block and an inline block at the same time */}
       <div className="flow-inline">
         {text}
-        {inlineBlocks}
+        {/* {inlineBlocks} */}
       </div>
 
       {/* These are trailing */}
