@@ -155,13 +155,13 @@ export default class Editor {
       this.moveLine(this.getCursor(), target);
     }
 
-    if (e.key === 'Shift') {
+    if (e.key === 'Ctrl') {
       Editor.multiSelect = true;
     }
   }
 
   static onKeyUp(e: KeyboardEvent) {
-    if (e.key === 'Shift') {
+    if (e.key === 'Ctrl') {
       Editor.multiSelect = false;
     }
   }
