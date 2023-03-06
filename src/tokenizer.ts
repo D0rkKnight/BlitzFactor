@@ -1,10 +1,8 @@
 import * as path from 'path';
 
-export default class Tokenizer {
+export default class MyTokenizer {
 
     static tokenize(context: any, text: string): any {
-        
-        console.log("Tokenizing input!")
         
         let Parser = require('web-tree-sitter');
 
@@ -17,9 +15,19 @@ export default class Tokenizer {
                 parser.setLanguage(js);
 
                 let tree = parser.parse(text);
-                console.log(tree.rootNode.toString());
+                console.log(tree);
+
+                return tree;
             });
         });
+
+    }
+
+    private static processWASMTree(tree: any): any {
+
+        // Go through and grab indices, types, children, and text
+
+
 
     }
 

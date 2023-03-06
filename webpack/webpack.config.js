@@ -29,8 +29,6 @@ const extensionConfig = {
     vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     // modules added here also need to be added in the .vscodeignore file
 
-    // 'tree-sitter': 'commonjs tree-sitter',
-    // 'tree-sitter-javascript': 'commonjs tree-sitter-javascript',
     'web-tree-sitter': 'commonjs web-tree-sitter',
   },
   resolve: {
@@ -52,25 +50,6 @@ const extensionConfig = {
             loader: 'ts-loader'
           }
         ]
-      },
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env', '@babel/preset-react']
-            }
-          },
-          {
-            loader: 'ts-loader'
-          }
-        ]
-      },
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
       }
     ]
   },
@@ -92,6 +71,30 @@ const browserConfig = {
   output: {
     libraryTarget: 'umd',
   },
+
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react']
+            }
+          },
+          {
+            loader: 'ts-loader'
+          }
+        ]
+      },
+      {
+        test: /\.css$/,
+        use: ["style-loader", "css-loader"]
+      }
+    ]
+  },
 };
 
 const nodeConfig = {
@@ -106,5 +109,3 @@ const nodeConfig = {
 };
 
 module.exports = [merge(extensionConfig, browserConfig), merge(extensionConfig, nodeConfig)];
-
-// module.exports = merge(extensionConfig, browserConfig);
