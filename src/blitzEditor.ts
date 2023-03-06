@@ -111,7 +111,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				txt);
 				
 			// Print out entire document text
-			var outcome = vscode.workspace.applyEdit(edit)
+			var outcome = vscode.workspace.applyEdit(edit);
 			console.log(document.getText());
 
 			return outcome;

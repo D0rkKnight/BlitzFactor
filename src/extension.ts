@@ -38,21 +38,21 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Pick the first action and perform it
 		possibleActions.then((actions: any) => {
-			if (actions.length == 0) {
+			if (actions.length === 0) {
 				console.log('No actions available');
 				return;
 			}
 
-			if (actions[0] == undefined) {
+			if (actions[0] === undefined) {
 				console.log('Action is not defined');
 				return;
 			}
 
-			console.log("All actions: ")
+			console.log("All actions: ");
 			console.log(actions);
 
 			let toExecute = actions[0];
-			console.log('Executing action: ')
+			console.log('Executing action: ');
 			console.log(toExecute);
 
 			let command = toExecute.command.command;
