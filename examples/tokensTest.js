@@ -1,3 +1,1 @@
-function HelloWorld() {
-  return "Hello World!"
-}
+var x = 3

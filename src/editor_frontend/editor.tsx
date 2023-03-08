@@ -1,3 +1,5 @@
+import { TokenType } from "../tokenTypes";
+
 declare var acquireVsCodeApi: any;
 
 var vscode: any;
@@ -33,7 +35,38 @@ export default class Editor {
   // }
 
   static onUpdate(message: any) {
-    this.redraw(message);
+    let filtered = this.filterTree(message);
+
+    console.log(filtered);
+
+    this.redraw(filtered);
+  }
+
+  static filterTree(json: any) {
+    let newJson = {... json};
+    newJson['children'] = [];
+
+    // Delete all punctuation (punctuation are leaf nodes so we can just cull them)
+    // TODO: perform the culling on the frontend
+    if (json['type'] == TokenType.punctuation)
+        return null;
+
+    for (let i = 0; i < json['children'].length; i++) {
+        let child = json['children'][i];
+
+        let newChild = this.filterTree(child);
+
+        if (newChild != null)
+            newJson['children'].push(newChild);
+    }
+
+    // Redefine bounds, should be safe since we're in our own model by now
+    if (newJson['children'].length > 0) {
+      newJson['start'] = newJson['children'][0]['start'];
+      newJson['end'] = newJson['children'][newJson['children'].length - 1]['end'];
+    }
+
+    return newJson;
   }
 
   static requestUpdate() {
@@ -41,12 +74,6 @@ export default class Editor {
       type: 'requestUpdate'
     });
   }
-  
-  // static tokenize(text: string): string[] {
-  //   const lines = text.split('\r');
-  
-  //   return lines;
-  // }
   
   static redraw(tokens: any) {
     Editor.tokenChangeCB.forEach(cb => cb(tokens));

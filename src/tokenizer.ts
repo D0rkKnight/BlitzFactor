@@ -1,14 +1,6 @@
 import * as path from 'path';
 import * as tempTree from './editor_frontend/cosmos/sampleTokens';
-
-enum TokenType {
-    identifier,
-    function_declaration,
-    formal_parameters,
-    statement_block,
-    punctuation,
-    other
-}
+import { TokenType } from './tokenTypes';
 
 export default class MyTokenizer {
 
@@ -56,10 +48,10 @@ export default class MyTokenizer {
         let json = this.WASMtoJSON(tree.rootNode, text);
         // console.log(JSON.stringify(json, null, 2));
 
-        let condensed = this.condenseJSON(json);
-        console.log(JSON.stringify(condensed, null, 2));
+        // let condensed = this.condenseJSON(json);
+        // console.log(JSON.stringify(condensed, null, 2));
 
-        return condensed;
+        return json;
 
     }
 
