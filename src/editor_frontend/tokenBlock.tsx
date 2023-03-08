@@ -11,9 +11,11 @@ interface DragItem {
 }
 
 
-export default function TokenBlock({id, line, color = "blue", selected=false, tree}) {
+export default function TokenBlock({id, line, color = "blue", selected=false, parHovered=false, tree}) {
   const ref = useRef<HTMLDivElement>(null)
   const [state, setState] = React.useState({ hovered: false });
+
+  let hovered = state.hovered || parHovered;
 
 //   const [{isDragging}, drag] = useDrag(() => ({
 //       type: ItemTypes.TOKEN,
@@ -55,7 +57,7 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
   };
 
   function getBGCol() {
-    if (state.hovered) {
+    if (hovered) {
       return "lightblue";
     } else if (selected) {
       return "lightgreen";
@@ -106,7 +108,7 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       
       let innerElements = subtree.map((child, index) => {
-        return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} />
+        return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} parHovered={hovered} tree={child} />
       });
       
       if (innerElements.length === 0)
