@@ -1,6 +1,7 @@
 import * as path from 'path';
 import * as tempTree from './editor_frontend/cosmos/sampleTokens';
 import { TokenType } from './tokenTypes';
+import Token from './token';
 
 export default class MyTokenizer {
 
@@ -58,6 +59,8 @@ export default class MyTokenizer {
     // Convert to JSON since this gives us a Cosmos testable format and a way to generalize to other tokenizers 
     private static WASMtoJSON(node: any, text: string): any {
 
+
+
         let json = {
             "type": this.WASMTypeToTokenType(node.type),
             "rawType": node.type,
@@ -101,7 +104,7 @@ export default class MyTokenizer {
         }
     }
 
-    private static condenseJSON(json: any) {
+    public static condenseJSON(json: any) {
 
         // Condense function headers for example into a single node
         // Cuz it turns out that visual blocking is not the same as code blocking
@@ -110,9 +113,8 @@ export default class MyTokenizer {
         newJson['children'] = [];
 
         // Delete all punctuation (punctuation are leaf nodes so we can just cull them)
-        // TODO: perform the culling on the frontend
-        // if (json['type'] == TokenType.punctuation)
-        //     return null;
+        if (json['type'] == TokenType.punctuation)
+            return null;
 
         for (let i = 0; i < json['children'].length; i++) {
             let child = json['children'][i];
@@ -124,12 +126,10 @@ export default class MyTokenizer {
         }
 
         // Recalculate start and end positions since deleting leaf nodes may shift our bounds
-
-        // TODO: Don't do this this is asking for trouble
-        // if (newJson['children'].length > 0) {
-        //     newJson['start'] = newJson['children'][0]['start'];
-        //     newJson['end'] = newJson['children'][newJson['children'].length - 1]['end'];
-        // }
+        if (newJson['children'].length > 0) {
+            newJson['start'] = newJson['children'][0]['start'];
+            newJson['end'] = newJson['children'][newJson['children'].length - 1]['end'];
+        }
 
         return newJson;
     }
