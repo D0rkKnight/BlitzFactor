@@ -17,7 +17,7 @@
     "commands": [
       {
         "command": "blitzFactor.sidePreview",
-        "title": "BlitzFactor Side Preview"
+        "title": "BlitzFactor"
       },
       {
         "command": "blitzFactor.printActions",

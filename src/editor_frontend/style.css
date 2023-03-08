@@ -12,6 +12,20 @@
     flex-direction: row;
 }
 
+.flow-indent {
+    margin-left: 20px;
+}
+
+.flow-trailing-total {
+    display: flex;
+    flex-direction: row;
+}
+
+.flow-trailing-content {
+    display: flex;
+    flex-direction: column;
+}
+
 .flow-line__text {
     font-size: 14px;
     line-height: 1.5;

@@ -150,7 +150,14 @@ export default function TokenBlock({id, line, color = "blue", selected=false, tr
       </div>
 
       {/* These are trailing */}
-      {trailingBlocks}
+      <div className="flow-trailing-total">
+
+        <div className="flow-indent"></div>
+
+        <div className="flow-trailing-content">
+          {trailingBlocks}
+        </div>
+      </div>
     </div>
   );
 }
