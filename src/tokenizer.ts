@@ -3,7 +3,7 @@ import * as tempTree from './editor_frontend/cosmos/sampleTokens';
 import { TokenType } from './tokenTypes';
 import Token from './token';
 
-export default class MyTokenizer {
+export default class Tokenizer {
 
     static parser = null as any;
     static context = null as any;

@@ -1,4 +1,4 @@
-import MyTokenizer from "../tokenizer";
+import Tokenizer from "../tokenizer";
 
 declare var acquireVsCodeApi: any;
 
@@ -35,7 +35,7 @@ export default class Editor {
   // }
 
   static onUpdate(message: any) {
-    let filtered = MyTokenizer.condenseJSON(message);
+    let filtered = Tokenizer.condenseJSON(message);
 
     this.redraw(filtered);
   }
