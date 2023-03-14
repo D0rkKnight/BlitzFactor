@@ -1,6 +1,7 @@
 import path = require('path');
 import { getNonce } from './util';
 import * as vscode from 'vscode';
+import Tokenizer from './tokenizer';
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
@@ -24,10 +25,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
     
     function updateWebview() {
-      webviewPanel.webview.postMessage({
-        type: 'update',
-        text: document.getText(),
-      });
+		let tree = Tokenizer.tokenize(document.getText());
+
+		webviewPanel.webview.postMessage({
+			type: 'update',
+			tree: tree,
+		});
     }
 
 	// Update web view on document change
@@ -111,7 +114,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				txt);
 				
 			// Print out entire document text
-			var outcome = vscode.workspace.applyEdit(edit)
+			var outcome = vscode.workspace.applyEdit(edit);
 			console.log(document.getText());
 
 			return outcome;

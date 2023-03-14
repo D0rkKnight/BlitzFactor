@@ -13,6 +13,8 @@
 		"noImplicitAny": false, /* Raise error on expressions and declarations with an implied 'any' type. */
 		"jsx": "react",
 
+		"esModuleInterop": true // Need this for testing
+
 		/* Additional Checks */
 		// "noImplicitReturns": true, /* Report error when not all code paths in function return a value. */
 		// "noFallthroughCasesInSwitch": true, /* Report errors for fallthrough cases in switch statement. */
