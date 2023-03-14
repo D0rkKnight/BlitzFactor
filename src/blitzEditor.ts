@@ -90,7 +90,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 				<link href="${styleUri}" rel="stylesheet" />
 
-				<title>Cat Scratch</title>
+				<title>Blitz Editor</title>
 			</head>
 			<body>
 				<div id="app"></div>

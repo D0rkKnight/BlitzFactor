@@ -46,7 +46,22 @@ const extensionConfig = {
             loader: 'ts-loader'
           }
         ]
-      }
+      },
+      {
+        test: /\.tsx$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react']
+            }
+          },
+          {
+            loader: 'ts-loader'
+          }
+        ]
+      },
     ]
   },
   plugins: [
@@ -70,21 +85,6 @@ const browserConfig = {
 
   module: {
     rules: [
-      {
-        test: /\.tsx$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env', '@babel/preset-react']
-            }
-          },
-          {
-            loader: 'ts-loader'
-          }
-        ]
-      },
       {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]

@@ -5,17 +5,17 @@ import {ItemTypes} from "./constants";
 import {useDrag} from "react-dnd";
 import {useDrop} from "react-dnd";
 import {useRef} from "react";
+import Token from "../token";
+import Highlighter from "./Highlighter";
 
 interface DragItem {
   line: number;
 }
 
 
-export default function TokenBlock({id, line, color = "blue", selected=false, parHovered=false, tree}) {
+export default function TokenBlock({id, line, color = "blue", selected=false, hovered=false, tree}) {
   const ref = useRef<HTMLDivElement>(null)
-  const [state, setState] = React.useState({ hovered: false });
-
-  let hovered = state.hovered || parHovered;
+  const [state, setstate] = React.useState({hovered: false, selected: false});
 
 //   const [{isDragging}, drag] = useDrag(() => ({
 //       type: ItemTypes.TOKEN,
@@ -41,11 +41,15 @@ export default function TokenBlock({id, line, color = "blue", selected=false, pa
 //     Editor.selectLine(line);
 //   };
 
+  // Gets triggered by the state rerender
+  let deepestHover = Highlighter.isHighlighted(id);
+  hovered = deepestHover || hovered;
+
   function setHover(val: boolean) {
-    // Recolor line
-    const newState = { ...state };
-    newState.hovered = val;
-    setState(newState);
+
+    // Edit highlighted set in editor
+    Highlighter.setHighlightInclusion(id, val);
+    setstate({...state, hovered: val}); // This triggers the rerender
   };
 
   function onHover() {
@@ -57,7 +61,9 @@ export default function TokenBlock({id, line, color = "blue", selected=false, pa
   };
 
   function getBGCol() {
-    if (hovered) {
+    if (deepestHover)
+      return "darkblue";
+    else if (hovered) {
       return "lightblue";
     } else if (selected) {
       return "lightgreen";
@@ -68,29 +74,16 @@ export default function TokenBlock({id, line, color = "blue", selected=false, pa
 
   
   let trailingBlocks: (JSX.Element | null | undefined) [] = [];
-  // let inlineBlocks: JSX.Element[] = [];
   let text: JSX.Element | null = null;
   
   if (tree.children.length > 0) {
-    // subtree = tree.children.map((child, index) => {
-      //   return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} /> // Weird default value issue?
-      
-      
-    // });
     
     // Check end lines of every subtree element
-    let vertPointer = tree['start']['row'];
+    let vertPointer = tree.start[0];
     let blockedSubtree = [[] as any[]];
-    // let inlineSubtree: any[] = [];
 
     for (let i = 0; i < tree.children.length; i++) {
-      const childStartLine = tree.children[i]['start']['row'];
-      
-      // // Load to the inline span first
-      // if (childStartLine === tree['start']['row']) {
-      //   inlineSubtree.push(tree.children[i]);
-      //   continue;
-      // }
+      const childStartLine = tree.children[i].start[0];
       
       if (childStartLine > vertPointer) {
         vertPointer = childStartLine;
@@ -100,15 +93,11 @@ export default function TokenBlock({id, line, color = "blue", selected=false, pa
       // Push the child to the last array
       blockedSubtree[blockedSubtree.length - 1].push(tree.children[i]);
     }
-    
-    // inlineBlocks = inlineSubtree.map((child, index) => {
-    //   return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} tree={child} />
-    // });
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       
       let innerElements = subtree.map((child, index) => {
-        return <TokenBlock key={index} id={Editor.getTokenID()} line={index} selected={selected} parHovered={hovered} tree={child} />
+        return Token.tokenToReact(child, selected, hovered, index);
       });
       
       if (innerElements.length === 0)
@@ -125,7 +114,6 @@ export default function TokenBlock({id, line, color = "blue", selected=false, pa
 
     // Only display text if it's a leaf
     text = <div className="flow-line__text">{tree.text}</div>;
-    
   }
   
   const style = {

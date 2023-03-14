@@ -5,4 +5,3 @@ function helloworld() {
         alert("AWOOGA AWOOGA tania was here uwu");
     }
 }
-  
