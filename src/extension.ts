@@ -2,7 +2,7 @@
 // Import the module and reference it with the alias vscode in your code below
 import * as vscode from 'vscode';
 import { BlitzEditorProvider } from './blitzEditor';
-import MyTokenizer from './tokenizer';
+import Tokenizer from './tokenizer';
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -70,10 +70,10 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}));
 
-	MyTokenizer.initialize(context);
+	Tokenizer.initialize(context);
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.printAST', () => {
 
-		MyTokenizer.tokenize(vscode.window.activeTextEditor?.document.getText() as string);
+		Tokenizer.tokenize(vscode.window.activeTextEditor?.document.getText() as string);
 
 	}));
 }

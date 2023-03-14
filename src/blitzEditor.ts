@@ -1,7 +1,7 @@
 import path = require('path');
 import { getNonce } from './util';
 import * as vscode from 'vscode';
-import MyTokenizer from './tokenizer';
+import Tokenizer from './tokenizer';
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
@@ -25,7 +25,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
     webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
     
     function updateWebview() {
-		let tree = MyTokenizer.tokenize(document.getText());
+		let tree = Tokenizer.tokenize(document.getText());
 
 		webviewPanel.webview.postMessage({
 			type: 'update',
