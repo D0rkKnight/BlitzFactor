@@ -34,7 +34,7 @@ export default class Editor {
   };
 
   static onUpdate(message: any) {
-    let filtered = Tokenizer.condenseJSON(message);
+    let filtered = Tokenizer.condenseTree(message);
 
     if (filtered != null) {
       this.syntaxTree = new SyntaxTree(filtered);

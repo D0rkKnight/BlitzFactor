@@ -70,12 +70,17 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}));
 
-	Tokenizer.initialize(context);
+	let tokenizerPromise = Tokenizer.initialize(context);
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.printAST', () => {
 
 		Tokenizer.tokenize(vscode.window.activeTextEditor?.document.getText() as string);
 
 	}));
+
+	return {
+		context: context,
+		tokenizer: {class: Tokenizer, initPromise: tokenizerPromise}
+	};
 }
 
 // This method is called when your extension is deactivated
