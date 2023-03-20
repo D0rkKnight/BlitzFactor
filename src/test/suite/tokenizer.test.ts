@@ -14,6 +14,7 @@ suite('Syntax Tree Test Suite', () => {
 
     suiteSetup(async () => {
         // This activates the tokenizer already
+        // Tokenizer returned seems to be on separate prototype chain from the one you would import here
         let {tokenizer} = await vscode.extensions.getExtension('dorkknight.blitzfactor')?.activate();
 
         await tokenizer.initPromise;
@@ -43,5 +44,16 @@ suite('Syntax Tree Test Suite', () => {
         let json = Tokenizer.tokenize("let x = 5;");
 
         mock.verify();
+    })
+
+    test('Syntax Tree test', () => {
+        let root = Tokenizer.tokenize("let x = 5;");
+
+        let st = new SyntaxTree(root);
+
+        assert(st.root.children.length === 1, "Root should have 1 child");
+
+        
+
     })
 });
