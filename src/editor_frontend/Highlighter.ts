@@ -22,12 +22,15 @@ export default class Highlighter {
     // Capture adjusted highlighted token
     Highlighter.adjToken = Highlighter.getAdjustedFromDeepest();
 
+    console.log("Deepest: ", Highlighter.deepestToken);
+    console.log("Adjusted: ", Highlighter.adjToken);
+
     // Redraw the tree with different highlight values
     Editor.redraw();
   }
 
-  private static getAdjustedFromDeepest(highlighted: Token[] = this.highlightedTokens, deepest: Token | null = this.deepestToken, tree: SyntaxTree = Editor.syntaxTree!): Token | null {
-    if (highlighted.length > 0 && deepest !== null) {
+  public static getAdjustedFromDeepest(deepest: Token | null = Highlighter.deepestToken, tree: SyntaxTree = Editor.syntaxTree!): Token | null {
+    if (deepest !== null) {
 
       // Get the highest token that is left adjusted with the deepest highlighted token
       let adj = deepest;
@@ -35,8 +38,8 @@ export default class Highlighter {
 
       while ((parent = tree.backlinks.get(adj!)) !== undefined) {
 
-        if (parent.children[0].start[0] === this.adjToken!.start[0] &&
-          parent.children[0].start[1] === this.adjToken!.start[1]) {
+        if (parent.children[0].start[0] === adj!.start[0] &&
+          parent.children[0].start[1] === adj!.start[1]) {
           adj = parent;
         } else {
           break;
@@ -49,7 +52,7 @@ export default class Highlighter {
     return null;
   }
 
-  private static getDeepestHighlighted(highlighted: Token[] = this.highlightedTokens): Token | null {
+  public static getDeepestHighlighted(highlighted: Token[] = this.highlightedTokens): Token | null {
     if (highlighted.length > 0) {
       return highlighted.reduce((a, b) => {
         return a.depth > b.depth ? a : b;

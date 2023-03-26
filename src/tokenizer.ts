@@ -92,6 +92,8 @@ export default class Tokenizer {
                 return TokenType.formal_parameters;
             case "statement_block":
                 return TokenType.statement_block;
+            case "program":
+                return TokenType.program;
             case "(":
             case ")":
             case "{":

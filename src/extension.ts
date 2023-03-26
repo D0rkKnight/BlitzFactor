@@ -51,7 +51,7 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log("All actions: ");
 			console.log(actions);
 
-			let toExecute = actions[0];
+			let toExecute = actions[1];
 			console.log('Executing action: ');
 			console.log(toExecute);
 
@@ -67,6 +67,8 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log(allArgs);
 
 			vscode.commands.executeCommand.apply(null, allArgs as any);
+
+			// vscode.commands.executeCommand("function_scope_0", allArgs as any);
 		});
 	}));
 

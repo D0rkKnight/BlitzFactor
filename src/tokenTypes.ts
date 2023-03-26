@@ -4,5 +4,6 @@ export enum TokenType {
     formal_parameters,
     statement_block,
     punctuation,
+    program,
     other
 }

@@ -42,8 +42,8 @@ export default function TokenBlock({id, line, color = "blue", selected=false, ho
 //   };
 
   // Gets triggered by the state rerender
-  let deepestHover = Highlighter.isHighlighted(id);
-  hovered = deepestHover || hovered;
+  let primaryHover = Highlighter.isHighlighted(id);
+  hovered = primaryHover || hovered;
 
   function setHover(val: boolean) {
 
@@ -61,7 +61,7 @@ export default function TokenBlock({id, line, color = "blue", selected=false, ho
   };
 
   function getBGCol() {
-    if (deepestHover)
+    if (primaryHover)
       return "darkblue";
     else if (hovered) {
       return "lightblue";
@@ -136,7 +136,6 @@ export default function TokenBlock({id, line, color = "blue", selected=false, ho
       {/* These are inline, note that there will never be a text block and an inline block at the same time */}
       <div className="flow-inline">
         {text}
-        {/* {inlineBlocks} */}
       </div>
 
       {/* These are trailing */}
