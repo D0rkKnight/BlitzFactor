@@ -15,8 +15,11 @@ export function activate(context: vscode.ExtensionContext) {
 	let openSidePanel = vscode.commands.registerCommand('blitzFactor.sidePreview', () => {
 
 		// Create a split view and launch the blitz editor for the active file
-		vscode.commands.executeCommand('workbench.action.splitEditorRight');
-		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor');
+		// vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor');
+		
+		// Create a new editor window
+		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor', {viewColumn: vscode.ViewColumn.Beside});
+
 	});
 
 	context.subscriptions.push(openSidePanel);
