@@ -67,7 +67,6 @@ const extensionConfig = {
   plugins: [
     new NodePolyfillPlugin(),
   ],
-  devtool: 'nosources-source-map',
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },
@@ -91,6 +90,7 @@ const browserConfig = {
       }
     ]
   },
+  devtool: 'inline-source-map',
 };
 
 const nodeConfig = {
@@ -102,6 +102,7 @@ const nodeConfig = {
   output: {
     libraryTarget: 'commonjs2',
   },
+  devtool: 'nosources-source-map',
 };
 
 module.exports = [merge(extensionConfig, browserConfig), merge(extensionConfig, nodeConfig)];
