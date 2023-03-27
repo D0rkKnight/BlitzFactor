@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as tempTree from './editor_frontend/cosmos/sampleTokens';
 import { TokenType } from './tokenTypes';
 import Token from './token';
 
@@ -41,9 +40,7 @@ export default class Tokenizer {
         
         if (!this.tokenizerReady) {
             console.log("Parser not initialized, awaiting initialization");
-            console.log("Take this temporary JSON for now");
-
-            return tempTree;
+            return null;
         }
 
         let tree = this.parser.parse(text);
