@@ -71,7 +71,7 @@ const extensionConfig = {
   },
   plugins: [
     new NodePolyfillPlugin(),
-    new HtmlWebpackPlugin()
+    // new HtmlWebpackPlugin()
   ],
   experiments: {
     topLevelAwait: true
@@ -83,9 +83,9 @@ const extensionConfig = {
 };
 
 const browserConfig = {
-  entry: {
-    'editor': './src/editor_frontend/editor_index.tsx'
-  },
+  // entry: {
+  //   'editor': './src/editor_frontend/editor_index.tsx'
+  // },
 
   target: 'web',
   output: {
