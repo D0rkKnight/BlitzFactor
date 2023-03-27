@@ -1,5 +1,3 @@
-const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-
 module.exports = {
   "stories": [
     "../src/**/*.stories.mdx",
