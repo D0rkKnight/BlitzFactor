@@ -12,7 +12,6 @@ interface DragItem {
   line: number;
 }
 
-
 export default function TokenBlock({id, line, color = "blue", selected=false, hovered=false, tree}) {
   const ref = useRef<HTMLDivElement>(null)
   const [state, setstate] = React.useState({hovered: false, selected: false});
@@ -48,7 +47,7 @@ export default function TokenBlock({id, line, color = "blue", selected=false, ho
   function setHover(val: boolean) {
 
     // Edit highlighted set in editor
-    Highlighter.setHighlightInclusion(id, val);
+    Highlighter.setHighlightInclusion(tree, val);
     setstate({...state, hovered: val}); // This triggers the rerender
   };
 
