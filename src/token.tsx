@@ -35,4 +35,23 @@ export default class Token {
         return <TokenBlock key={key} id={id} 
         line={id} selected={selected} hovered={hovered} tree={tok} />;
     }
+
+    public findTextInChildren(text: string): Token | null {
+        for (let child of this.children) {
+            if (child.text === text)
+                return child;
+            
+            let found = child.findTextInChildren(text);
+            if (found !== null)
+                return found;
+        }
+        return null;
+    }
+
+    public getAllTokens(): Token[] {
+        let tokens = [this as Token];
+        for (let child of this.children)
+            tokens = tokens.concat(child.getAllTokens());
+        return tokens;
+    }
 }
