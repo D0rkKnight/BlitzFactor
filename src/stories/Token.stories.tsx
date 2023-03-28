@@ -7,6 +7,9 @@ import "../editor_frontend/style.css";
 import { ComponentStory } from "@storybook/react";
 import tree1 from "./tree_jsons/tree1.json";
 
+import Editor from "../editor_frontend/editor";
+import SyntaxTree from "../editor_frontend/SyntaxTree";
+
 export default {
   title: "Example/Token",
   component: TokenBlock,
@@ -26,3 +29,6 @@ Primary.args = {
   hovered: false,
   tree: tree1,
 };
+
+// Do some backend stuff
+Editor.setMockSyntaxTree(new SyntaxTree(tree1));

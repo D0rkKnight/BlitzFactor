@@ -2,6 +2,9 @@ import Token from "../token";
 import Editor from "./editor";
 import SyntaxTree from "./SyntaxTree";
 
+/**
+ * Provides certain services regarding highlighting items
+ */
 export default class Highlighter {
   static highlightedTokens: Token[] = [];
   static deepestToken: Token | null = null; // Deepest highlighted token

@@ -13,7 +13,7 @@ files.forEach(file => {
         const source = fs.readFileSync(`src/stories/tree_jsons/${file}`, "utf8")
         const tree = parser.parse(source)
 
-        let processed = Tokenizer.WASMtoTREE(tree.rootNode, source)
+        let processed = Tokenizer.WASMtoTREE(tree.rootNode, 0)
 
         fs.writeFileSync(`src/stories/tree_jsons/${file.replace(".txt", ".json")}`, JSON.stringify(processed))
     }
