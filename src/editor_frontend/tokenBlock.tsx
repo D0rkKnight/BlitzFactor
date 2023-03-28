@@ -17,11 +17,14 @@ export default function TokenBlock({
   line,
   color = "blue",
   selected = false,
-  hovered = false,
+  setHover,
+  parentHovered,
   tree,
 }) {
   const ref = useRef<HTMLDivElement>(null);
-  const [state, setstate] = React.useState({ hovered: false, selected: false });
+  const [state, setstate] = React.useState({
+    selected: false,
+  });
 
   //   const [{isDragging}, drag] = useDrag(() => ({
   //       type: ItemTypes.TOKEN,
@@ -48,26 +51,25 @@ export default function TokenBlock({
   //   };
 
   // Gets triggered by the state rerender
-  let primaryHover = Highlighter.isHighlighted(id);
-  hovered = primaryHover || hovered;
+  let isDeepestHovered = tree === Highlighter.deepestToken;
+  let isAdjustedHovered = tree === Highlighter.adjToken;
+  let isHovered = isDeepestHovered || isAdjustedHovered || parentHovered;
 
-  function setHover(val: boolean) {
-    // Edit highlighted set in editor
-    Highlighter.setHighlightInclusion(tree, val);
-    setstate({ ...state, hovered: val }); // This triggers the rerender
-  }
+  // If any parent is hovered, then this is hovered (visually speaking)
 
   function onHover() {
-    setHover(true);
+    setHover(true, tree);
   }
 
   function onUnhover() {
-    setHover(false);
+    setHover(false, tree);
   }
 
   function getBGCol() {
-    if (primaryHover) return "darkblue";
-    else if (hovered) {
+    if (isDeepestHovered) return "darkblue";
+    else if (isAdjustedHovered) {
+      return "blue";
+    } else if (isHovered) {
       return "lightblue";
     } else if (selected) {
       return "lightgreen";
@@ -98,7 +100,7 @@ export default function TokenBlock({
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       let innerElements = subtree.map((child, index) => {
-        return Token.tokenToReact(child, selected, hovered, index);
+        return Token.tokenToReact(child, selected, setHover, isHovered, index);
       });
 
       if (innerElements.length === 0) return null;

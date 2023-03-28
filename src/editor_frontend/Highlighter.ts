@@ -4,9 +4,11 @@ import SyntaxTree from "./SyntaxTree";
 
 /**
  * Provides certain services regarding highlighting items
+ * Only holds state, will not call other code
  */
 export default class Highlighter {
   static highlightedTokens: Token[] = [];
+
   static deepestToken: Token | null = null; // Deepest highlighted token
   static adjToken: Token | null = null; // Adjusted highlighted token (greatest parent token that is left adjusted with deepest token)
 
@@ -25,11 +27,8 @@ export default class Highlighter {
     // Capture adjusted highlighted token
     Highlighter.adjToken = Highlighter.getAdjustedFromDeepest();
 
-    console.log("Deepest: ", Highlighter.deepestToken);
-    console.log("Adjusted: ", Highlighter.adjToken);
-
-    // Redraw the tree with different highlight values
-    Editor.redraw();
+    console.log("Deepest: ", Highlighter.deepestToken)
+    console.log("Adjusted: ", Highlighter.adjToken)
   }
 
   public static getAdjustedFromDeepest(deepest: Token | null = Highlighter.deepestToken, tree: SyntaxTree = Editor.syntaxTree!): Token | null {

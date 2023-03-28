@@ -9,6 +9,7 @@ import tree1 from "./tree_jsons/tree1.json";
 
 import Editor from "../editor_frontend/editor";
 import SyntaxTree from "../editor_frontend/SyntaxTree";
+import TokenFlow from "../editor_frontend/tokenFlow";
 
 export default {
   title: "Example/Token",
@@ -16,19 +17,14 @@ export default {
   // decorators: [(Story) => <TokenizerDecorator>{Story()}</TokenizerDecorator>],
 };
 
-const Template: ComponentStory<typeof TokenBlock> = (args) => {
-  return <TokenBlock {...args} />;
+const Template: ComponentStory<typeof TokenFlow> = (args) => {
+  return <TokenFlow {...args} />;
 };
 
 export const Primary = Template.bind({});
 Primary.args = {
-  id: 0,
-  line: 0,
-  color: "blue",
-  selected: false,
-  hovered: false,
   tree: tree1,
 };
 
 // Do some backend stuff
-Editor.setMockSyntaxTree(new SyntaxTree(tree1));
+Editor.setMockSyntaxTree(new SyntaxTree(tree1 as unknown as Token));
