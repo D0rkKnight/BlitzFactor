@@ -46,7 +46,7 @@ export default class Tokenizer {
         let tree = this.parser.parse(text);
         // console.log(tree.rootNode.toString());
 
-        let json = this.WASMtoTREE(tree.rootNode, text, 0);
+        let json = this.WASMtoTREE(tree.rootNode, 0);
         // console.log(JSON.stringify(json, null, 2));
 
         // let condensed = this.condenseJSON(json);
@@ -57,7 +57,7 @@ export default class Tokenizer {
     }
 
     // Convert to JSON since this gives us a Cosmos testable format and a way to generalize to other tokenizers 
-    private static WASMtoTREE(node: any, text: string, depth: number): Token {
+    private static WASMtoTREE(node: any, depth: number): Token {
 
         let token = new Token(
 
@@ -72,7 +72,7 @@ export default class Tokenizer {
 
         for (let i = 0; i < node.childCount; i++) {
             let child = node.children[i];
-            token.children.push(this.WASMtoTREE(child, text, depth+1));
+            token.children.push(this.WASMtoTREE(child, depth+1));
         }
 
         return token;

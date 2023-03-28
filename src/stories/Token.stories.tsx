@@ -1,13 +1,18 @@
 import React from "react";
-
 import TokenBlock from "../editor_frontend/tokenBlock";
 import Token from "../token";
 import { TokenType } from "../tokenTypes";
-import Tokenizer from "../tokenizer";
 
 import "../editor_frontend/style.css";
 import { ComponentStory } from "@storybook/react";
-import TokenizerDecorator from "./TokenizerDecorator";
+import tree1 from "./tree_jsons/tree1.json";
+
+let Parser = require("web-tree-sitter");
+Parser.init().then(() => {
+  console.log("Parser initialized");
+});
+
+// import http from "http";
 
 export default {
   title: "Example/Token",
@@ -19,18 +24,12 @@ export default {
 
 const Template: ComponentStory<typeof TokenBlock> = (args) => {
   // Token.tokenToReact(args["token"]);
+
+  // Make an http call to port 1337
+  // args.tree.text = tree1.text;
+
   return <TokenBlock {...args} />;
 };
-
-let tok = new Token(
-  TokenType.identifier,
-  "identifier",
-  [0, 0],
-  [0, 0],
-  "identifier",
-  [],
-  0
-);
 
 export const Primary = Template.bind({});
 Primary.args = {
@@ -39,7 +38,7 @@ Primary.args = {
   color: "blue",
   selected: false,
   hovered: false,
-  tree: tok,
+  tree: tree1,
 };
 
 // export default {
