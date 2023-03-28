@@ -1,5 +1,14 @@
 // import Tokenizer from '../tokenizer'
 var http = require('http');
+let Parser = require("tree-sitter")
+
+const parser = new Parser()
+parser.setLanguage(require("tree-sitter-javascript"))
+
+const sourceCode = "function add(a, b) { return a + b; }"
+const tree = parser.parse(sourceCode)
+
+console.log(tree.rootNode.toString())
 
 // let context = {
 //     asAbsolutePath: function (path) {
@@ -7,11 +16,13 @@ var http = require('http');
 //     }
 // }
 
-(async () => {
-    let Parser = require('web-tree-sitter');
+// (async () => {
+//     let Parser = require('web-tree-sitter');
 
-    await Parser.init();
-})();
+//     await Parser.init();
+// })();
+
+
 
 http.createServer(function (req, res) {
     res.writeHead(200, {'Content-Type': 'text/plain'});

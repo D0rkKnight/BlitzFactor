@@ -26,6 +26,7 @@ const extensionConfig = {
     // modules added here also need to be added in the .vscodeignore file
 
     'web-tree-sitter': 'commonjs web-tree-sitter',
+    // 'tree-sitter': 'commonjs tree-sitter', // Can't use this since tree-sitter is compiled against the wrong Node version
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader

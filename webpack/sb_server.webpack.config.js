@@ -26,6 +26,8 @@ const extensionConfig = {
     // modules added here also need to be added in the .vscodeignore file
 
     // 'web-tree-sitter': 'commonjs web-tree-sitter',
+    'tree-sitter': 'commonjs tree-sitter',
+    'tree-sitter-javascript': 'commonjs tree-sitter-javascript',
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -74,7 +76,8 @@ const extensionConfig = {
 
 const nodeConfig = {
   entry: {
-    'sb_server': './src/storybook_server/sb_server.ts',
+    // 'sb_server': './src/storybook_server/sb_server.ts',
+    'json_writer': './src/stories/jsonWriter.js',
   },
 
   target: 'node',
