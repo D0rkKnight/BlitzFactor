@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 import Editor from "./editor";
 import { useDraggable } from "@dnd-kit/core";
 import { ItemTypes } from "./constants";
@@ -26,6 +27,7 @@ export default function TokenBlock({
   const [state, setstate] = React.useState({
     selected: false,
   });
+  const [expanded, setExpanded] = React.useState(true);
 
   //   const [{isDragging}, drag] = useDrag(() => ({
   //       type: ItemTypes.TOKEN,
@@ -80,13 +82,81 @@ export default function TokenBlock({
   let trailingBlocks: (JSX.Element | null | undefined)[] = [];
   let text: JSX.Element | null = null;
 
-  if (tree.children.length > 0) {
+  let childrenToShow = tree.children;
+  if (!expanded) {
+    // Remove any statement blocks
+    childrenToShow = childrenToShow.filter((child) => {
+      return child.type !== TokenType.statement_block;
+    });
+  }
+
+  ({ trailingBlocks, text } = getTrailingBlocks(
+    tree,
+    childrenToShow,
+    trailingBlocks,
+    selected,
+    setHover,
+    isHovered,
+    text
+  ));
+
+  const style = {
+    backgroundColor: getBGCol(),
+  };
+
+  // Indent if the token is a conditional body or a function body
+  let indent =
+    tree.type === TokenType.statement_block ? (
+      <div className="flow-indent" />
+    ) : null;
+
+  //   drag(drop(ref)); // Hooks up refs to drag and drop
+
+  // Mouse click to expand or collapse
+  function onClick() {
+    setExpanded(!expanded);
+  }
+
+  return (
+    <>
+      {indent}
+
+      <div
+        className="flow-block"
+        //   onClick={onLineClick}
+        onMouseOver={onHover}
+        onMouseLeave={onUnhover}
+        onClick={onClick}
+        style={style}
+        ref={ref}
+      >
+        {/* These are inline, note that there will never be a text block and an inline block at the same time */}
+        <div className="flow-inline">{text}</div>
+
+        {/* These are trailing */}
+        <div className="flow-trailing-total">
+          <div className="flow-trailing-content">{trailingBlocks}</div>
+        </div>
+      </div>
+    </>
+  );
+}
+function getTrailingBlocks(
+  tree: any,
+  childrenToShow: any[],
+  trailingBlocks: (JSX.Element | null | undefined)[],
+  selected: boolean,
+  setHover: any,
+  isHovered: any,
+  text: JSX.Element | null
+) {
+  if (childrenToShow.length > 0) {
     // Check end lines of every subtree element
     let vertPointer = tree.start[0];
     let blockedSubtree = [[] as any[]];
 
-    for (let i = 0; i < tree.children.length; i++) {
-      const childStartLine = tree.children[i].start[0];
+    for (let i = 0; i < childrenToShow.length; i++) {
+      const childStartLine = childrenToShow[i].start[0];
 
       if (childStartLine > vertPointer) {
         vertPointer = childStartLine;
@@ -94,7 +164,7 @@ export default function TokenBlock({
       }
 
       // Push the child to the last array
-      blockedSubtree[blockedSubtree.length - 1].push(tree.children[i]);
+      blockedSubtree[blockedSubtree.length - 1].push(childrenToShow[i]);
     }
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
@@ -114,39 +184,5 @@ export default function TokenBlock({
     // Only display text if it's a leaf
     text = <div className="flow-line__text">{tree.text}</div>;
   }
-
-  const style = {
-    backgroundColor: getBGCol(),
-  };
-
-  // Indent if the token is a conditional body or a function body
-  let indent =
-    tree.type === TokenType.statement_block ? (
-      <div className="flow-indent" />
-    ) : null;
-
-  //   drag(drop(ref)); // Hooks up refs to drag and drop
-
-  return (
-    <>
-      {indent}
-
-      <div
-        className="flow-block"
-        //   onClick={onLineClick}
-        onMouseOver={onHover}
-        onMouseLeave={onUnhover}
-        style={style}
-        ref={ref}
-      >
-        {/* These are inline, note that there will never be a text block and an inline block at the same time */}
-        <div className="flow-inline">{text}</div>
-
-        {/* These are trailing */}
-        <div className="flow-trailing-total">
-          <div className="flow-trailing-content">{trailingBlocks}</div>
-        </div>
-      </div>
-    </>
-  );
+  return { trailingBlocks, text };
 }
