@@ -6,17 +6,17 @@ import { TokenType } from "../tokenTypes";
 
 import "../editor_frontend/style.css";
 import { ComponentStory } from "@storybook/react";
-import tree1 from "./tree_jsons/tree1.json";
-import tree2 from "./tree_jsons/tree2.json";
+import superTree from "./tree_jsons/superTree.json";
 
 import Editor from "../editor_frontend/editor";
 import SyntaxTree from "../editor_frontend/SyntaxTree";
 import TokenFlow from "../editor_frontend/tokenFlow";
 
+import { configure } from "@storybook/react";
+
 export default {
   title: "Example/Token",
   component: TokenBlock,
-  // decorators: [(Story) => <TokenizerDecorator>{Story()}</TokenizerDecorator>],
 };
 
 const Template: ComponentStory<typeof TokenFlow> = (args) => {
@@ -28,12 +28,16 @@ const Template: ComponentStory<typeof TokenFlow> = (args) => {
   return <TokenFlow {...args} />;
 };
 
-export const flow1 = Template.bind({});
-flow1.args = {
-  tree: tree1,
-};
+const flows = [] as ComponentStory<typeof TokenFlow>[];
+for (var flowInfo in superTree) {
+  const flow = Template.bind({});
+  flow.args = {
+    tree: superTree[flowInfo]["tree"],
+  };
 
-export const flow2 = Template.bind({});
-flow2.args = {
-  tree: tree2,
-};
+  flows.push(flow);
+}
+
+export const flow1 = flows[0];
+export const flow2 = flows[1];
+export const flow3 = flows[2];

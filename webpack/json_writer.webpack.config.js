@@ -12,7 +12,6 @@ const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
 
 /** @type WebpackConfig */
 const extensionConfig = {
-  // target: 'node', // VS Code extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
   output: {
@@ -22,10 +21,6 @@ const extensionConfig = {
     libraryTarget: 'commonjs2'
   },
   externals: {
-    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
-    // modules added here also need to be added in the .vscodeignore file
-
-    // 'web-tree-sitter': 'commonjs web-tree-sitter',
     'tree-sitter': 'commonjs tree-sitter',
     'tree-sitter-javascript': 'commonjs tree-sitter-javascript',
   },
@@ -76,7 +71,6 @@ const extensionConfig = {
 
 const nodeConfig = {
   entry: {
-    // 'sb_server': './src/storybook_server/sb_server.ts',
     'json_writer': './src/stories/jsonWriter.js',
   },
 

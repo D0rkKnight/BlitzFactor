@@ -67,7 +67,8 @@
     "cosmos": "cosmos",
     "cosmos:export": "cosmos-export",
     "storybook": "start-storybook -p 6006",
-    "build-storybook": "build-storybook"
+    "build-storybook": "build-storybook",
+    "watch-json-writer": "webpack --watch --config webpack/json_writer.webpack.config.js"
   },
   "devDependencies": {
     "@babel/core": "^7.21.3",
