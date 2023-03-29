@@ -29,6 +29,9 @@ export default function TokenBlock({
   });
   const [expanded, setExpanded] = React.useState(true);
 
+  const [renaming, setRenaming] = React.useState(false);
+  const [renameValue, setRenameValue] = React.useState(tree.text);
+
   //   const [{isDragging}, drag] = useDrag(() => ({
   //       type: ItemTypes.TOKEN,
   //       item: { line: line },
@@ -90,66 +93,22 @@ export default function TokenBlock({
     });
   }
 
-  ({ trailingBlocks, text } = getTrailingBlocks(
-    tree,
-    childrenToShow,
-    trailingBlocks,
-    selected,
-    setHover,
-    isHovered,
-    text
-  ));
+  const onRenameFieldEdit = (e) => {
+    setRenameValue(e.target.value);
+  };
+  const onRenameKeyDown = (e) => {
+    if (e.key === "Enter") {
+      // Rename the token
+      console.log("Renaming token to " + renameValue);
 
-  const style = {
-    backgroundColor: getBGCol(),
+      setRenaming(false);
+    }
+    if (e.key === "Escape") {
+      setRenaming(false);
+      setRenameValue(tree.text);
+    }
   };
 
-  // Indent if the token is a conditional body or a function body
-  let indent =
-    tree.type === TokenType.statement_block ? (
-      <div className="flow-indent" />
-    ) : null;
-
-  //   drag(drop(ref)); // Hooks up refs to drag and drop
-
-  // Mouse click to expand or collapse
-  function onClick() {
-    setExpanded(!expanded);
-  }
-
-  return (
-    <>
-      {indent}
-
-      <div
-        className="flow-block"
-        //   onClick={onLineClick}
-        onMouseOver={onHover}
-        onMouseLeave={onUnhover}
-        onClick={onClick}
-        style={style}
-        ref={ref}
-      >
-        {/* These are inline, note that there will never be a text block and an inline block at the same time */}
-        <div className="flow-inline">{text}</div>
-
-        {/* These are trailing */}
-        <div className="flow-trailing-total">
-          <div className="flow-trailing-content">{trailingBlocks}</div>
-        </div>
-      </div>
-    </>
-  );
-}
-function getTrailingBlocks(
-  tree: any,
-  childrenToShow: any[],
-  trailingBlocks: (JSX.Element | null | undefined)[],
-  selected: boolean,
-  setHover: any,
-  isHovered: any,
-  text: JSX.Element | null
-) {
   if (childrenToShow.length > 0) {
     // Check end lines of every subtree element
     let vertPointer = tree.start[0];
@@ -182,7 +141,70 @@ function getTrailingBlocks(
     });
   } else {
     // Only display text if it's a leaf
-    text = <div className="flow-line__text">{tree.text}</div>;
+    if (!renaming) text = <div className="flow-line__text">{tree.text}</div>;
+    else {
+      text = (
+        <input
+          type="text"
+          value={renameValue}
+          onChange={onRenameFieldEdit}
+          onKeyDown={onRenameKeyDown}
+          className="flow-line__text"
+        />
+      );
+    }
   }
-  return { trailingBlocks, text };
+
+  const style = {
+    backgroundColor: getBGCol(),
+  };
+
+  // Indent if the token is a conditional body or a function body
+  let indent =
+    tree.type === TokenType.statement_block ? (
+      <div className="flow-indent" />
+    ) : null;
+
+  //   drag(drop(ref)); // Hooks up refs to drag and drop
+
+  // Mouse click to expand or collapse
+  const onClick = (e) => {
+    switch (e.detail) {
+      case 1: // Expand/close
+        setExpanded(!expanded);
+        break;
+      case 2:
+        // Double click
+        onDoubleClick();
+        break;
+    }
+  };
+
+  const onDoubleClick = () => {
+    setRenaming(true);
+  };
+
+  return (
+    <>
+      {indent}
+
+      <div
+        className="flow-block"
+        //   onClick={onLineClick}
+        onMouseOver={onHover}
+        onMouseLeave={onUnhover}
+        onClick={onClick}
+        style={style}
+        ref={ref}
+      >
+        {/* These are inline, note that there will never be a text block and an inline block at the same time */}
+        <div className="flow-inline">{text}</div>
+
+        {/* These are trailing */}
+        <div className="flow-trailing-total">
+          <div className="flow-trailing-content">{trailingBlocks}</div>
+        </div>
+      </div>
+    </>
+  );
 }
