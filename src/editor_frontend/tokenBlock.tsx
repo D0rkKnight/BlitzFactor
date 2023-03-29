@@ -1,4 +1,5 @@
 import * as React from "react";
+import { useEffect } from "react";
 import Editor from "./editor";
 import { useDraggable } from "@dnd-kit/core";
 import { ItemTypes } from "./constants";
@@ -26,6 +27,10 @@ export default function TokenBlock({
   const [state, setstate] = React.useState({
     selected: false,
   });
+  const [expanded, setExpanded] = React.useState(true);
+
+  const [renaming, setRenaming] = React.useState(false);
+  const [renameValue, setRenameValue] = React.useState(tree.text);
 
   //   const [{isDragging}, drag] = useDrag(() => ({
   //       type: ItemTypes.TOKEN,
@@ -80,13 +85,37 @@ export default function TokenBlock({
   let trailingBlocks: (JSX.Element | null | undefined)[] = [];
   let text: JSX.Element | null = null;
 
-  if (tree.children.length > 0) {
+  let childrenToShow = tree.children;
+  if (!expanded) {
+    // Remove any statement blocks
+    childrenToShow = childrenToShow.filter((child) => {
+      return child.type !== TokenType.statement_block;
+    });
+  }
+
+  const onRenameFieldEdit = (e) => {
+    setRenameValue(e.target.value);
+  };
+  const onRenameKeyDown = (e) => {
+    if (e.key === "Enter") {
+      // Rename the token
+      console.log("Renaming token to " + renameValue);
+
+      setRenaming(false);
+    }
+    if (e.key === "Escape") {
+      setRenaming(false);
+      setRenameValue(tree.text);
+    }
+  };
+
+  if (childrenToShow.length > 0) {
     // Check end lines of every subtree element
     let vertPointer = tree.start[0];
     let blockedSubtree = [[] as any[]];
 
-    for (let i = 0; i < tree.children.length; i++) {
-      const childStartLine = tree.children[i].start[0];
+    for (let i = 0; i < childrenToShow.length; i++) {
+      const childStartLine = childrenToShow[i].start[0];
 
       if (childStartLine > vertPointer) {
         vertPointer = childStartLine;
@@ -94,7 +123,7 @@ export default function TokenBlock({
       }
 
       // Push the child to the last array
-      blockedSubtree[blockedSubtree.length - 1].push(tree.children[i]);
+      blockedSubtree[blockedSubtree.length - 1].push(childrenToShow[i]);
     }
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
@@ -112,7 +141,18 @@ export default function TokenBlock({
     });
   } else {
     // Only display text if it's a leaf
-    text = <div className="flow-line__text">{tree.text}</div>;
+    if (!renaming) text = <div className="flow-line__text">{tree.text}</div>;
+    else {
+      text = (
+        <input
+          type="text"
+          value={renameValue}
+          onChange={onRenameFieldEdit}
+          onKeyDown={onRenameKeyDown}
+          className="flow-line__text"
+        />
+      );
+    }
   }
 
   const style = {
@@ -127,6 +167,23 @@ export default function TokenBlock({
 
   //   drag(drop(ref)); // Hooks up refs to drag and drop
 
+  // Mouse click to expand or collapse
+  const onClick = (e) => {
+    switch (e.detail) {
+      case 1: // Expand/close
+        setExpanded(!expanded);
+        break;
+      case 2:
+        // Double click
+        onDoubleClick();
+        break;
+    }
+  };
+
+  const onDoubleClick = () => {
+    setRenaming(true);
+  };
+
   return (
     <>
       {indent}
@@ -136,6 +193,7 @@ export default function TokenBlock({
         //   onClick={onLineClick}
         onMouseOver={onHover}
         onMouseLeave={onUnhover}
+        onClick={onClick}
         style={style}
         ref={ref}
       >

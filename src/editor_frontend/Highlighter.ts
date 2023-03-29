@@ -27,8 +27,8 @@ export default class Highlighter {
     // Capture adjusted highlighted token
     Highlighter.adjToken = Highlighter.getAdjustedFromDeepest();
 
-    console.log("Deepest: ", Highlighter.deepestToken)
-    console.log("Adjusted: ", Highlighter.adjToken)
+    // console.log("Deepest: ", Highlighter.deepestToken)
+    // console.log("Adjusted: ", Highlighter.adjToken)
   }
 
   public static getAdjustedFromDeepest(deepest: Token | null = Highlighter.deepestToken, tree: SyntaxTree = Editor.syntaxTree!): Token | null {
