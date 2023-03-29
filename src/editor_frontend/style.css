@@ -54,3 +54,8 @@
 .tok-selected {
     background-color: #b2f8ce;
 }
+
+.tok-input {
+    resize: auto;
+    min-width: 0;
+}

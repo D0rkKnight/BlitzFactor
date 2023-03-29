@@ -14,6 +14,8 @@ import TokenFlow from "../editor_frontend/tokenFlow";
 
 import { configure } from "@storybook/react";
 
+import ReactRadial from "react-radial";
+
 export default {
   title: "Example/Token",
   component: TokenBlock,
@@ -41,3 +43,5 @@ for (var flowInfo in superTree) {
 export const flow1 = flows[0];
 export const flow2 = flows[1];
 export const flow3 = flows[2];
+
+export const radialTest = () => <ReactRadial />;

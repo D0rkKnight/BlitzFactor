@@ -9,6 +9,7 @@ import { useRef } from "react";
 import Token from "../token";
 import Highlighter from "./Highlighter";
 import { TokenType } from "../tokenTypes";
+import TokRenameField from "./TokRenameField";
 
 interface DragItem {
   line: number;
@@ -89,6 +90,11 @@ export default function TokenBlock({
       setRenameValue(tree.text);
     }
   };
+  const onClickOutside = () => {
+    setRenaming(false);
+    setRenameValue(tree.text);
+  };
+
   const toggleExpand = () => {
     setExpanded(!expanded);
   };
@@ -152,12 +158,11 @@ export default function TokenBlock({
     if (!renaming) text = <div className="flow-line__text">{tree.text}</div>;
     else {
       text = (
-        <input
-          type="text"
-          value={renameValue}
-          onChange={onRenameFieldEdit}
-          onKeyDown={onRenameKeyDown}
-          className="flow-line__text"
+        <TokRenameField
+          renameValue={renameValue}
+          onRenameFieldEdit={onRenameFieldEdit}
+          onRenameKeyDown={onRenameKeyDown}
+          onClickOutside={onClickOutside}
         />
       );
     }

@@ -114,6 +114,7 @@
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
+    "react-radial": "^1.0.8",
     "style-loader": "^3.3.1",
     "tree-sitter": "^0.20.1",
     "tree-sitter-cli": "^0.20.7",
