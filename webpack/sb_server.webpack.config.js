@@ -5,7 +5,6 @@
 const path = require('path');
 const { merge } = require('webpack-merge');
 const NodePolyfillPlugin = require("node-polyfill-webpack-plugin");
-const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 
 //@ts-check
@@ -13,16 +12,22 @@ const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 /** @type WebpackConfig */
 const extensionConfig = {
+  // target: 'node', // VS Code extensions run in a Node.js-context 📖 -> https://webpack.js.org/configuration/node/
 	mode: 'none', // this leaves the source code as close as possible to the original (when packaging we set this to 'production')
 
   output: {
-    path: path.resolve(__dirname, 'cosmos_dist'),
+    // the bundle is stored in the 'dist' folder (check package.json), 📖 -> https://webpack.js.org/configuration/output/
+    path: path.resolve(__dirname, '../dist'),
     filename: '[name].js',
     libraryTarget: 'commonjs2'
   },
   externals: {
-    vscode: 'commonjs vscode' // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
+    vscode: 'commonjs vscode', // the vscode-module is created on-the-fly and must be excluded. Add other modules that cannot be webpack'ed, 📖 -> https://webpack.js.org/configuration/externals/
     // modules added here also need to be added in the .vscodeignore file
+
+    // 'web-tree-sitter': 'commonjs web-tree-sitter',
+    'tree-sitter': 'commonjs tree-sitter',
+    'tree-sitter-javascript': 'commonjs tree-sitter-javascript',
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -45,47 +50,41 @@ const extensionConfig = {
         ]
       },
       {
-        test: /\.tsx?$/,
+        test: /\.tsx$/,
         exclude: /node_modules/,
         use: [
           {
             loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react']
+            }
           },
           {
             loader: 'ts-loader'
           }
         ]
       },
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      },
-      {
-        test: /\.jsx$/,
-        exclude: /node_modules/,
-        use: {loader: "babel-loader"}
-      }
     ]
   },
   plugins: [
     new NodePolyfillPlugin(),
-    new HtmlWebpackPlugin()
   ],
-  devtool: 'nosources-source-map',
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },
 };
 
-const browserConfig = {
+const nodeConfig = {
   entry: {
-    'editor': './src/editor_frontend/editor_index.tsx'
+    // 'sb_server': './src/storybook_server/sb_server.ts',
+    'json_writer': './src/stories/jsonWriter.js',
   },
 
-  target: 'web',
+  target: 'node',
   output: {
-    libraryTarget: 'umd',
+    libraryTarget: 'commonjs2',
   },
+  devtool: 'nosources-source-map',
 };
 
-module.exports = merge(extensionConfig, browserConfig);
+module.exports = merge(extensionConfig, nodeConfig);

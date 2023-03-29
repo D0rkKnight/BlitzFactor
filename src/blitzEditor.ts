@@ -2,6 +2,7 @@ import path = require('path');
 import { getNonce } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
+import Token from './token';
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
@@ -49,6 +50,10 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				break;
 			case 'requestUpdate':
 				updateWebview();
+				break;
+			case 'renameToken':
+				this.renameToken(document, e.body.token, e.body.newName);
+				break;
 			}
 		}
 	);
@@ -90,7 +95,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 				<link href="${styleUri}" rel="stylesheet" />
 
-				<title>Cat Scratch</title>
+				<title>Blitz Editor</title>
 			</head>
 			<body>
 				<div id="app"></div>
@@ -119,6 +124,19 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 			return outcome;
 		}
+
+	renameToken(document: vscode.TextDocument, token: Token, newName: string) {
+		let uri = document.uri;
+		let position = new vscode.Position(token.start[0], token.start[1]);
+
+		// Perform a rename on the current selected symbol
+		vscode.commands.executeCommand("vscode.executeDocumentRenameProvider", uri, position, newName).then((result: any) => {
+
+			// Apply the edits
+			vscode.workspace.applyEdit(result as vscode.WorkspaceEdit);
+
+		});
+	}
 }
 
 exports.BlitzEditorProvider = BlitzEditorProvider;

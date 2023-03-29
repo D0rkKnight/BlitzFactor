@@ -15,8 +15,11 @@ export function activate(context: vscode.ExtensionContext) {
 	let openSidePanel = vscode.commands.registerCommand('blitzFactor.sidePreview', () => {
 
 		// Create a split view and launch the blitz editor for the active file
-		vscode.commands.executeCommand('workbench.action.splitEditorRight');
-		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor');
+		// vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor');
+		
+		// Create a new editor window
+		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor', {viewColumn: vscode.ViewColumn.Beside});
+
 	});
 
 	context.subscriptions.push(openSidePanel);
@@ -51,7 +54,7 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log("All actions: ");
 			console.log(actions);
 
-			let toExecute = actions[0];
+			let toExecute = actions[1];
 			console.log('Executing action: ');
 			console.log(toExecute);
 
@@ -67,15 +70,45 @@ export function activate(context: vscode.ExtensionContext) {
 			console.log(allArgs);
 
 			vscode.commands.executeCommand.apply(null, allArgs as any);
+
+			// vscode.commands.executeCommand("function_scope_0", allArgs as any);
 		});
 	}));
 
-	Tokenizer.initialize(context);
+	let tokenizerPromise = Tokenizer.initialize(context);
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.printAST', () => {
 
 		Tokenizer.tokenize(vscode.window.activeTextEditor?.document.getText() as string);
 
 	}));
+
+	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.renameTest', () => {
+
+		// Get cursor position
+		let cursorPosition = vscode.window.activeTextEditor?.selection.active;
+
+		// Get selection
+		let selection = vscode.window.activeTextEditor?.selection;
+
+		// Get the current document
+		let document = vscode.window.activeTextEditor?.document;
+
+		// Get uri of the document
+		let uri = vscode.window.activeTextEditor?.document.uri;
+
+		// Perform a rename on the current selected symbol
+		vscode.commands.executeCommand("vscode.executeDocumentRenameProvider", uri, cursorPosition, "hoogyboody").then((result: any) => {
+
+			// Apply the edits
+			vscode.workspace.applyEdit(result as vscode.WorkspaceEdit);
+
+		});
+	}));
+
+	return {
+		context: context,
+		tokenizer: {class: Tokenizer, initPromise: tokenizerPromise}
+	};
 }
 
 // This method is called when your extension is deactivated

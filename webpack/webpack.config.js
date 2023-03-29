@@ -26,6 +26,7 @@ const extensionConfig = {
     // modules added here also need to be added in the .vscodeignore file
 
     'web-tree-sitter': 'commonjs web-tree-sitter',
+    // 'tree-sitter': 'commonjs tree-sitter', // Can't use this since tree-sitter is compiled against the wrong Node version
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -46,13 +47,27 @@ const extensionConfig = {
             loader: 'ts-loader'
           }
         ]
-      }
+      },
+      {
+        test: /\.tsx$/,
+        exclude: /node_modules/,
+        use: [
+          {
+            loader: 'babel-loader',
+            options: {
+              presets: ['@babel/preset-env', '@babel/preset-react']
+            }
+          },
+          {
+            loader: 'ts-loader'
+          }
+        ]
+      },
     ]
   },
   plugins: [
     new NodePolyfillPlugin(),
   ],
-  devtool: 'nosources-source-map',
   infrastructureLogging: {
     level: "log", // enables logging required for problem matchers
   },
@@ -71,26 +86,12 @@ const browserConfig = {
   module: {
     rules: [
       {
-        test: /\.tsx$/,
-        exclude: /node_modules/,
-        use: [
-          {
-            loader: 'babel-loader',
-            options: {
-              presets: ['@babel/preset-env', '@babel/preset-react']
-            }
-          },
-          {
-            loader: 'ts-loader'
-          }
-        ]
-      },
-      {
         test: /\.css$/,
         use: ["style-loader", "css-loader"]
       }
     ]
   },
+  devtool: 'inline-source-map',
 };
 
 const nodeConfig = {
@@ -102,6 +103,7 @@ const nodeConfig = {
   output: {
     libraryTarget: 'commonjs2',
   },
+  devtool: 'nosources-source-map',
 };
 
 module.exports = [merge(extensionConfig, browserConfig), merge(extensionConfig, nodeConfig)];

@@ -1,5 +1,4 @@
 import * as path from 'path';
-import * as tempTree from './editor_frontend/cosmos/sampleTokens';
 import { TokenType } from './tokenTypes';
 import Token from './token';
 
@@ -8,29 +7,32 @@ export default class Tokenizer {
     static parser = null as any;
     static context = null as any;
     static tokenizerReady = false;
+    static initCalled = false;
 
-    static initialize(context: any) {
-        if (this.parser) return;
+    static async initialize(context: any) {
+        if (this.parser || this.initCalled) {
+            console.log("Parser initialization already called");
+            return;
+        }
+        this.initCalled = true;
+
         this.context = context;
-
         let Parser = require('web-tree-sitter');
 
-        Parser.init().then(() => {
-            this.parser = new Parser();
+        await Parser.init();
 
-            let grammarPath = context.asAbsolutePath(path.join('src', 'grammars', 'tree-sitter-javascript.wasm'));
+        this.parser = new Parser();
+        let grammarPath = context.asAbsolutePath(path.join('src', 'grammars', 'tree-sitter-javascript.wasm'));
 
-            Parser.Language.load(grammarPath).then((language: any) => {
-                if (this.parser) {
-                    this.parser.setLanguage(language);
-                    console.log("Parser initialized with language")
+        let language = await Parser.Language.load(grammarPath);
+        if (this.parser) {
+            this.parser.setLanguage(language);
+            console.log("Parser initialized with language")
 
-                    this.tokenizerReady = true;
-                }
-                else
-                    console.log("Parser not initialized");
-            });
-        });
+            this.tokenizerReady = true;
+        }
+        else
+            console.log("Parser not initialized");
     }
 
 
@@ -38,15 +40,13 @@ export default class Tokenizer {
         
         if (!this.tokenizerReady) {
             console.log("Parser not initialized, awaiting initialization");
-            console.log("Take this temporary JSON for now");
-
-            return tempTree;
+            return null;
         }
 
         let tree = this.parser.parse(text);
         // console.log(tree.rootNode.toString());
 
-        let json = this.WASMtoJSON(tree.rootNode, text);
+        let json = this.WASMtoTREE(tree.rootNode, 0);
         // console.log(JSON.stringify(json, null, 2));
 
         // let condensed = this.condenseJSON(json);
@@ -57,22 +57,22 @@ export default class Tokenizer {
     }
 
     // Convert to JSON since this gives us a Cosmos testable format and a way to generalize to other tokenizers 
-    private static WASMtoJSON(node: any, text: string): Token {
+    private static WASMtoTREE(node: any, depth: number): Token {
 
         let token = new Token(
 
             this.WASMTypeToTokenType(node.type),
             node.type,
-            node.startPosition,
-            node.endPosition,
+            [node.startPosition["row"], node.startPosition["column"]],
+            [node.endPosition["row"], node.endPosition["column"]],
             node.text,
-            [] as Token[]
-
+            [] as Token[],
+            depth,
         )
 
         for (let i = 0; i < node.childCount; i++) {
             let child = node.children[i];
-            token.children.push(this.WASMtoJSON(child, text));
+            token.children.push(this.WASMtoTREE(child, depth+1));
         }
 
         return token;
@@ -89,6 +89,8 @@ export default class Tokenizer {
                 return TokenType.formal_parameters;
             case "statement_block":
                 return TokenType.statement_block;
+            case "program":
+                return TokenType.program;
             case "(":
             case ")":
             case "{":
@@ -104,7 +106,7 @@ export default class Tokenizer {
         }
     }
 
-    public static condenseJSON(token: Token) {
+    public static condenseTree(token: Token) {
 
         // Condense function headers for example into a single node
         // Cuz it turns out that visual blocking is not the same as code blocking
@@ -118,7 +120,7 @@ export default class Tokenizer {
         for (let i = 0; i < token.children.length; i++) {
             let child = token.children[i];
 
-            let newChild = this.condenseJSON(child);
+            let newChild = this.condenseTree(child);
 
             if (newChild != null)
                 newJson.children.push(newChild);
