@@ -77,4 +77,19 @@ export default class Editor {
       },
     });
   }
+
+  static retrieveCodeActions(toks: Token[]) {
+    vscode.postMessage({
+      type: "retrieveCodeActions",
+      body: {
+        tokens: toks,
+      },
+    });
+  }
+
+  static actionNames = [] as string[];
+
+  static setCodeActionCache(actionNames: string[]) {
+    this.actionNames = actionNames;
+  }
 }

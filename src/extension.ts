@@ -34,7 +34,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Get selection
 		let selection = vscode.window.activeTextEditor?.selection;
-
 		let possibleActions = vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
 
 		console.log("Querying possible actions", possibleActions)

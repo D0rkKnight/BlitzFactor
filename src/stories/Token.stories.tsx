@@ -13,8 +13,7 @@ import SyntaxTree from "../editor_frontend/SyntaxTree";
 import TokenFlow from "../editor_frontend/tokenFlow";
 
 import { configure } from "@storybook/react";
-
-import ReactRadial from "react-radial";
+import RadialMenu from "../editor_frontend/RadialMenu";
 
 export default {
   title: "Example/Token",
@@ -43,5 +42,3 @@ for (var flowInfo in superTree) {
 export const flow1 = flows[0];
 export const flow2 = flows[1];
 export const flow3 = flows[2];
-
-export const radialTest = () => <ReactRadial />;

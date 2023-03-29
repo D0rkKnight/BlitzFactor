@@ -18,6 +18,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
   constructor(private readonly context: vscode.ExtensionContext) {}
 
+  private codeActionCache: any = {};
+
   public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
     webviewPanel.webview.options = {
       enableScripts: true
@@ -53,6 +55,25 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				break;
 			case 'renameToken':
 				this.renameToken(document, e.body.token, e.body.newName);
+				break;
+			case 'retrieveCodeActions':
+				const codeActionPromise = this.retrieveCodeActions(document, e.body.tokens);
+
+
+				codeActionPromise.then((codeActions: any) => {
+					this.codeActionCache = codeActions;
+
+					// Get only the names
+					const names = codeActions.map((action: any) => action.name);
+
+					// Send the code actions back
+					webviewPanel.webview.postMessage({
+						type: 'codeActions',
+						body: {
+							actionNames: names,
+						}
+					});
+				});
 				break;
 			}
 		}
@@ -136,6 +157,21 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			vscode.workspace.applyEdit(result as vscode.WorkspaceEdit);
 
 		});
+	}
+
+	async retrieveCodeActions(document: vscode.TextDocument, tokens: Token[]) {
+
+		let uri = document.uri;
+		let selections = tokens.map((token) => {
+			return new vscode.Selection(token.start[0], token.start[1], token.end[0], token.end[1]);
+		});
+
+
+		// Get selection
+		let selection = selections[0]
+		let possibleActions = await vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
+
+		return possibleActions;
 	}
 }
 
