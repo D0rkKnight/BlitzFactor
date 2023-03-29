@@ -22,6 +22,7 @@ export default function TokenBlock({
   setHover,
   parentHovered,
   tree,
+  onHeaderClick = () => {},
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [state, setstate] = React.useState({
@@ -85,14 +86,6 @@ export default function TokenBlock({
   let trailingBlocks: (JSX.Element | null | undefined)[] = [];
   let text: JSX.Element | null = null;
 
-  let childrenToShow = tree.children;
-  if (!expanded) {
-    // Remove any statement blocks
-    childrenToShow = childrenToShow.filter((child) => {
-      return child.type !== TokenType.statement_block;
-    });
-  }
-
   const onRenameFieldEdit = (e) => {
     setRenameValue(e.target.value);
   };
@@ -109,6 +102,17 @@ export default function TokenBlock({
       setRenameValue(tree.text);
     }
   };
+  const toggleExpand = () => {
+    setExpanded(!expanded);
+  };
+
+  let childrenToShow = tree.children;
+  if (!expanded) {
+    // Remove any statement blocks
+    childrenToShow = childrenToShow.filter((child) => {
+      return child.type !== TokenType.statement_block;
+    });
+  }
 
   if (childrenToShow.length > 0) {
     // Check end lines of every subtree element
@@ -129,7 +133,23 @@ export default function TokenBlock({
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       let innerElements = subtree.map((child, index) => {
-        return Token.tokenToReact(child, selected, setHover, isHovered, index);
+        let headerClick = () => {};
+
+        // Header check
+        if (child.type !== TokenType.statement_block) {
+          headerClick = toggleExpand;
+        }
+
+        const tok = Token.tokenToReact(
+          child,
+          selected,
+          setHover,
+          isHovered,
+          index,
+          headerClick
+        );
+
+        return tok;
       });
 
       if (innerElements.length === 0) return null;
@@ -172,7 +192,7 @@ export default function TokenBlock({
   const onClick = (e) => {
     switch (e.detail) {
       case 1: // Expand/close
-        setExpanded(!expanded);
+        onHeaderClick(); // Passed down from the parent to expand/collapse the parent
         break;
       case 2:
         // Double click

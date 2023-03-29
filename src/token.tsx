@@ -47,7 +47,8 @@ export default class Token {
     selected: boolean = false,
     setHover: Function = () => {},
     parentHovered: boolean = false,
-    key: number | undefined = undefined
+    key: number | undefined = undefined,
+    onClick: () => void = () => {}
   ): JSX.Element {
     let id = Editor.syntaxTree?.getTokenID(tok);
 
@@ -62,6 +63,7 @@ export default class Token {
         setHover={setHover}
         parentHovered={parentHovered}
         tree={tok}
+        onHeaderClick={onClick}
       />
     );
   }
