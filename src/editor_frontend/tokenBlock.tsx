@@ -22,7 +22,7 @@ export default function TokenBlock({
   setHover,
   parentHovered,
   tree,
-  onHeaderClick = () => {},
+  onHeaderClick: collapseParentCB = () => {},
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [state, setstate] = React.useState({
@@ -68,19 +68,6 @@ export default function TokenBlock({
 
   function onUnhover() {
     setHover(false, tree);
-  }
-
-  function getBGCol() {
-    if (isDeepestHovered) return "darkblue";
-    else if (isAdjustedHovered) {
-      return "blue";
-    } else if (isHovered) {
-      return "lightblue";
-    } else if (selected) {
-      return "lightgreen";
-    } else {
-      return "white";
-    }
   }
 
   let trailingBlocks: (JSX.Element | null | undefined)[] = [];
@@ -133,11 +120,11 @@ export default function TokenBlock({
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       let innerElements = subtree.map((child, index) => {
-        let headerClick = () => {};
+        let collapseThis = () => {};
 
         // Header check
         if (child.type !== TokenType.statement_block) {
-          headerClick = toggleExpand;
+          collapseThis = toggleExpand;
         }
 
         const tok = Token.tokenToReact(
@@ -146,7 +133,7 @@ export default function TokenBlock({
           setHover,
           isHovered,
           index,
-          headerClick
+          collapseThis
         );
 
         return tok;
@@ -176,9 +163,14 @@ export default function TokenBlock({
     }
   }
 
-  const style = {
-    backgroundColor: getBGCol(),
-  };
+  // No style overrides
+  const style = {};
+
+  const classes = [] as string[];
+  if (selected) classes.push("tok-selected");
+  else if (isDeepestHovered) classes.push("tok-deep_highlighted");
+  else if (isAdjustedHovered) classes.push("tok-adj_highlighted");
+  else if (isHovered) classes.push("tok-group_highlighted");
 
   // Indent if the token is a conditional body or a function body
   let indent =
@@ -192,7 +184,7 @@ export default function TokenBlock({
   const onClick = (e) => {
     switch (e.detail) {
       case 1: // Expand/close
-        onHeaderClick(); // Passed down from the parent to expand/collapse the parent
+        collapseParentCB(); // Passed down from the parent to expand/collapse the parent
         break;
       case 2:
         // Double click
@@ -210,8 +202,7 @@ export default function TokenBlock({
       {indent}
 
       <div
-        className="flow-block"
-        //   onClick={onLineClick}
+        className={"flow-block " + classes.join(" ")}
         onMouseOver={onHover}
         onMouseLeave={onUnhover}
         onClick={onClick}

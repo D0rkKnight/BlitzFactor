@@ -36,3 +36,19 @@
     margin-top: 5px; */
     margin: 5px;
 }
+
+.tok-group_highlighted {
+    background-color: #d7e0ec;
+}
+
+.tok-adj_highlighted {
+    background-color: #a5bbc9;
+}
+
+.tok-deep_highlighted {
+    background-color: #94b7ba;
+}
+
+.tok-selected {
+    background-color: #b2f8ce;
+}
