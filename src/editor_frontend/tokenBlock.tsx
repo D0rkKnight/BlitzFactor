@@ -7,6 +7,7 @@ import { useDrop } from "react-dnd";
 import { useRef } from "react";
 import Token from "../token";
 import Highlighter from "./Highlighter";
+import { TokenType } from "../tokenTypes";
 
 interface DragItem {
   line: number;
@@ -54,8 +55,6 @@ export default function TokenBlock({
   let isDeepestHovered = tree === Highlighter.deepestToken;
   let isAdjustedHovered = tree === Highlighter.adjToken;
   let isHovered = isDeepestHovered || isAdjustedHovered || parentHovered;
-
-  // If any parent is hovered, then this is hovered (visually speaking)
 
   function onHover() {
     setHover(true, tree);
@@ -120,26 +119,34 @@ export default function TokenBlock({
     backgroundColor: getBGCol(),
   };
 
+  // Indent if the token is a conditional body or a function body
+  let indent =
+    tree.type === TokenType.statement_block ? (
+      <div className="flow-indent" />
+    ) : null;
+
   //   drag(drop(ref)); // Hooks up refs to drag and drop
 
   return (
-    <div
-      className="flow-block"
-      //   onClick={onLineClick}
-      onMouseOver={onHover}
-      onMouseLeave={onUnhover}
-      style={style}
-      ref={ref}
-    >
-      {/* These are inline, note that there will never be a text block and an inline block at the same time */}
-      <div className="flow-inline">{text}</div>
+    <>
+      {indent}
 
-      {/* These are trailing */}
-      <div className="flow-trailing-total">
-        <div className="flow-indent"></div>
+      <div
+        className="flow-block"
+        //   onClick={onLineClick}
+        onMouseOver={onHover}
+        onMouseLeave={onUnhover}
+        style={style}
+        ref={ref}
+      >
+        {/* These are inline, note that there will never be a text block and an inline block at the same time */}
+        <div className="flow-inline">{text}</div>
 
-        <div className="flow-trailing-content">{trailingBlocks}</div>
+        {/* These are trailing */}
+        <div className="flow-trailing-total">
+          <div className="flow-trailing-content">{trailingBlocks}</div>
+        </div>
       </div>
-    </div>
+    </>
   );
 }
