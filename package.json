@@ -27,6 +27,10 @@
       {
         "command": "blitzFactor.printAST",
         "title": "Print AST"
+      },
+      {
+        "command": "blitzFactor.renameTest",
+        "title": "Rename Test"
       }
     ],
     "customEditors": [

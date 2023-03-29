@@ -1,14 +1,14 @@
-
 import * as React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
-import Editor from './editor';
+import Editor from "./editor";
 import TokenBlock from "./tokenBlock";
+import TokenFlow from "./tokenFlow";
 import Token from "../token";
 
 export default function App() {
-  const [tokens, setTokens] = React.useState(null as Token|null);
+  const [tokens, setTokens] = React.useState(null as Token | null);
   const [selectedLines, setSelectedLines] = React.useState([] as number[]);
 
   React.useEffect(() => {
@@ -36,24 +36,24 @@ export default function App() {
     // });
 
     // Update display on update
-    window.addEventListener('message', event => {
+    window.addEventListener("message", (event) => {
       const message = event.data; // The JSON data our extension sent
 
       switch (message.type) {
-          case 'update':
-              Editor.onUpdate(message.tree);
-              break;
+        case "update":
+          Editor.onUpdate(message.tree);
+          break;
       }
     });
 
     // Load everything now
     Editor.requestUpdate();
-
   }, []);
 
   let treeBlock = <p> Loading... </p>;
   if (tokens != null) {
-    treeBlock = Token.tokenToReact(tokens);
+    // treeBlock = Token.tokenToReact(tokens);
+    treeBlock = <TokenFlow tree={tokens} />;
   }
 
   return (

@@ -100,6 +100,7 @@ export default function TokenBlock({
     if (e.key === "Enter") {
       // Rename the token
       console.log("Renaming token to " + renameValue);
+      Editor.renameTokenTo(tree, renameValue);
 
       setRenaming(false);
     }

@@ -82,6 +82,29 @@ export function activate(context: vscode.ExtensionContext) {
 
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.renameTest', () => {
+
+		// Get cursor position
+		let cursorPosition = vscode.window.activeTextEditor?.selection.active;
+
+		// Get selection
+		let selection = vscode.window.activeTextEditor?.selection;
+
+		// Get the current document
+		let document = vscode.window.activeTextEditor?.document;
+
+		// Get uri of the document
+		let uri = vscode.window.activeTextEditor?.document.uri;
+
+		// Perform a rename on the current selected symbol
+		vscode.commands.executeCommand("vscode.executeDocumentRenameProvider", uri, cursorPosition, "hoogyboody").then((result: any) => {
+
+			// Apply the edits
+			vscode.workspace.applyEdit(result as vscode.WorkspaceEdit);
+
+		});
+	}));
+
 	return {
 		context: context,
 		tokenizer: {class: Tokenizer, initPromise: tokenizerPromise}

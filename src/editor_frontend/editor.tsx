@@ -67,4 +67,14 @@ export default class Editor {
     this.syntaxTree = tree;
     this.redraw();
   }
+
+  static renameTokenTo(token: Token, newName: string) {
+    vscode.postMessage({
+      type: "renameToken",
+      body: {
+        token: token,
+        newName: newName,
+      },
+    });
+  }
 }
