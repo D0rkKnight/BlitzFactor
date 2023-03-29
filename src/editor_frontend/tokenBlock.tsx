@@ -183,17 +183,25 @@ export default function TokenBlock({
   // Mouse click to expand or collapse
   const onClick = (e) => {
     switch (e.detail) {
-      case 1: // Expand/close
-        collapseParentCB(); // Passed down from the parent to expand/collapse the parent
-        break;
+      // case 1: // Expand/close
+      //   collapseParentCB(); // Passed down from the parent to expand/collapse the parent
+      //   break;
       case 2:
         // Double click
-        onDoubleClick();
+        beginRename();
         break;
     }
   };
 
-  const onDoubleClick = () => {
+  const onRightClick = (e) => {
+    e.preventDefault();
+    collapseParentCB();
+  };
+
+  const beginRename = () => {
+    // Only do this for identifiers
+    if (tree.type !== TokenType.identifier) return;
+
     setRenaming(true);
   };
 
@@ -206,6 +214,7 @@ export default function TokenBlock({
         onMouseOver={onHover}
         onMouseLeave={onUnhover}
         onClick={onClick}
+        onContextMenu={onRightClick}
         style={style}
         ref={ref}
       >

@@ -35,6 +35,8 @@
     /* margin-bottom: 5px;
     margin-top: 5px; */
     margin: 5px;
+
+    user-select: none;
 }
 
 .tok-group_highlighted {
