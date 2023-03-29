@@ -9,6 +9,7 @@ import { useRef } from "react";
 import Token from "../token";
 import Highlighter from "./Highlighter";
 import { TokenType } from "../tokenTypes";
+import TokRenameField from "./TokRenameField";
 
 interface DragItem {
   line: number;
@@ -22,6 +23,7 @@ export default function TokenBlock({
   setHover,
   parentHovered,
   tree,
+  onHeaderClick: collapseParentCB = () => {},
 }) {
   const ref = useRef<HTMLDivElement>(null);
   const [state, setstate] = React.useState({
@@ -69,29 +71,8 @@ export default function TokenBlock({
     setHover(false, tree);
   }
 
-  function getBGCol() {
-    if (isDeepestHovered) return "darkblue";
-    else if (isAdjustedHovered) {
-      return "blue";
-    } else if (isHovered) {
-      return "lightblue";
-    } else if (selected) {
-      return "lightgreen";
-    } else {
-      return "white";
-    }
-  }
-
   let trailingBlocks: (JSX.Element | null | undefined)[] = [];
   let text: JSX.Element | null = null;
-
-  let childrenToShow = tree.children;
-  if (!expanded) {
-    // Remove any statement blocks
-    childrenToShow = childrenToShow.filter((child) => {
-      return child.type !== TokenType.statement_block;
-    });
-  }
 
   const onRenameFieldEdit = (e) => {
     setRenameValue(e.target.value);
@@ -109,6 +90,22 @@ export default function TokenBlock({
       setRenameValue(tree.text);
     }
   };
+  const onClickOutside = () => {
+    setRenaming(false);
+    setRenameValue(tree.text);
+  };
+
+  const toggleExpand = () => {
+    setExpanded(!expanded);
+  };
+
+  let childrenToShow = tree.children;
+  if (!expanded) {
+    // Remove any statement blocks
+    childrenToShow = childrenToShow.filter((child) => {
+      return child.type !== TokenType.statement_block;
+    });
+  }
 
   if (childrenToShow.length > 0) {
     // Check end lines of every subtree element
@@ -129,7 +126,23 @@ export default function TokenBlock({
 
     trailingBlocks = blockedSubtree.map((subtree, index) => {
       let innerElements = subtree.map((child, index) => {
-        return Token.tokenToReact(child, selected, setHover, isHovered, index);
+        let collapseThis = () => {};
+
+        // Header check
+        if (child.type !== TokenType.statement_block) {
+          collapseThis = toggleExpand;
+        }
+
+        const tok = Token.tokenToReact(
+          child,
+          selected,
+          setHover,
+          isHovered,
+          index,
+          collapseThis
+        );
+
+        return tok;
       });
 
       if (innerElements.length === 0) return null;
@@ -145,20 +158,24 @@ export default function TokenBlock({
     if (!renaming) text = <div className="flow-line__text">{tree.text}</div>;
     else {
       text = (
-        <input
-          type="text"
-          value={renameValue}
-          onChange={onRenameFieldEdit}
-          onKeyDown={onRenameKeyDown}
-          className="flow-line__text"
+        <TokRenameField
+          renameValue={renameValue}
+          onRenameFieldEdit={onRenameFieldEdit}
+          onRenameKeyDown={onRenameKeyDown}
+          onClickOutside={onClickOutside}
         />
       );
     }
   }
 
-  const style = {
-    backgroundColor: getBGCol(),
-  };
+  // No style overrides
+  const style = {};
+
+  const classes = [] as string[];
+  if (selected) classes.push("tok-selected");
+  else if (isDeepestHovered) classes.push("tok-deep_highlighted");
+  else if (isAdjustedHovered) classes.push("tok-adj_highlighted");
+  else if (isHovered) classes.push("tok-group_highlighted");
 
   // Indent if the token is a conditional body or a function body
   let indent =
@@ -171,17 +188,25 @@ export default function TokenBlock({
   // Mouse click to expand or collapse
   const onClick = (e) => {
     switch (e.detail) {
-      case 1: // Expand/close
-        setExpanded(!expanded);
-        break;
+      // case 1: // Expand/close
+      //   collapseParentCB(); // Passed down from the parent to expand/collapse the parent
+      //   break;
       case 2:
         // Double click
-        onDoubleClick();
+        beginRename();
         break;
     }
   };
 
-  const onDoubleClick = () => {
+  const onRightClick = (e) => {
+    e.preventDefault();
+    collapseParentCB();
+  };
+
+  const beginRename = () => {
+    // Only do this for identifiers
+    if (tree.type !== TokenType.identifier) return;
+
     setRenaming(true);
   };
 
@@ -190,11 +215,11 @@ export default function TokenBlock({
       {indent}
 
       <div
-        className="flow-block"
-        //   onClick={onLineClick}
+        className={"flow-block " + classes.join(" ")}
         onMouseOver={onHover}
         onMouseLeave={onUnhover}
         onClick={onClick}
+        onContextMenu={onRightClick}
         style={style}
         ref={ref}
       >
