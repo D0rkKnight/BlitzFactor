@@ -16,16 +16,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Create a split view and launch the blitz editor for the active file
 		// vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor');
-		
+
 		// Create a new editor window
-		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor', {viewColumn: vscode.ViewColumn.Beside});
+		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor', { viewColumn: vscode.ViewColumn.Beside });
 
 	});
 
 	context.subscriptions.push(openSidePanel);
 	context.subscriptions.push(
 		BlitzEditorProvider.register(context));
-	
+
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.printActions', () => {
 
 		// Get cursor position
@@ -129,15 +129,15 @@ export function activate(context: vscode.ExtensionContext) {
 
 			const snippetString = new vscode.SnippetString(snippet);
 			const editor = vscode.window.activeTextEditor!;
-			// const insertPos = editor?.selection.active;
-			// const edit = new vscode.WorkspaceEdit();
-			// edit.set(editor.document.uri, [vscode.SnippetTextEdit.insert(insertPos, snippetString)])
+			const insertPos = editor?.selection.active;
+			const edit = new vscode.WorkspaceEdit();
+			edit.set(editor.document.uri, [vscode.SnippetTextEdit.insert(insertPos, snippetString)])
 
-			// void vscode.workspace.applyEdit(edit)
+			void vscode.workspace.applyEdit(edit)
 
 			// Call it with the name
-			
-			editor.insertSnippet(action.edit as vscode.SnippetString);
+
+			// editor.insertSnippet(action.edit as vscode.SnippetString);
 
 
 			// vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
@@ -149,9 +149,9 @@ export function activate(context: vscode.ExtensionContext) {
 
 	return {
 		context: context,
-		tokenizer: {class: Tokenizer, initPromise: tokenizerPromise}
+		tokenizer: { class: Tokenizer, initPromise: tokenizerPromise }
 	};
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
