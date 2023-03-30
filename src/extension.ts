@@ -107,7 +107,6 @@ export function activate(context: vscode.ExtensionContext) {
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.snippetTest', () => {
 
 		// Get cursor position
-		let cursorPosition = vscode.window.activeTextEditor?.selection.active;
 		let uri = vscode.window.activeTextEditor?.document.uri;
 
 		// Get selection

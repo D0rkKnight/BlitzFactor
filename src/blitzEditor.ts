@@ -8,87 +8,88 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
 
 export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
-  public static register(context: vscode.ExtensionContext): vscode.Disposable {
-    const provider = new BlitzEditorProvider(context);
-    const providerRegistration = vscode.window.registerCustomEditorProvider(BlitzEditorProvider.viewType, provider);
-    return providerRegistration;
-  }
+	public static register(context: vscode.ExtensionContext): vscode.Disposable {
+		const provider = new BlitzEditorProvider(context);
+		const providerRegistration = vscode.window.registerCustomEditorProvider(BlitzEditorProvider.viewType, provider);
+		return providerRegistration;
+	}
 
-  private static readonly viewType = 'blitzEditors.blitzEditor';
+	private static readonly viewType = 'blitzEditors.blitzEditor';
 
-  constructor(private readonly context: vscode.ExtensionContext) {}
+	constructor(private readonly context: vscode.ExtensionContext) { }
 
-  private codeActionCache: any = {};
+	private codeActionCache: any = {};
 
-  public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
-    webviewPanel.webview.options = {
-      enableScripts: true
-    };
-    
-    webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
-    
-    function updateWebview() {
-		let tree = Tokenizer.tokenize(document.getText());
+	public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
+		webviewPanel.webview.options = {
+			enableScripts: true
+		};
 
-		webviewPanel.webview.postMessage({
-			type: 'update',
-			tree: tree,
-		});
-    }
+		webviewPanel.webview.html = this.getHtmlForWebview(webviewPanel.webview);
 
-	// Update web view on document change
-	const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
-		if (e.document.uri.toString() === document.uri.toString()) {
-			updateWebview();
+		function updateWebview() {
+			let tree = Tokenizer.tokenize(document.getText());
+
+			webviewPanel.webview.postMessage({
+				type: 'update',
+				tree: tree,
+			});
 		}
-	});
-    
-	// Listen for messages from the webview
-	webviewPanel.webview.onDidReceiveMessage(e => {
 
-		switch (e.type) {
-			case 'update':
-				this.updateTextDocument(document, e.text);
-				break;
-			case 'requestUpdate':
+		// Update web view on document change
+		const changeDocumentSubscription = vscode.workspace.onDidChangeTextDocument(e => {
+			if (e.document.uri.toString() === document.uri.toString()) {
 				updateWebview();
-				break;
-			case 'renameToken':
-				this.renameToken(document, e.body.token, e.body.newName);
-				break;
-			case 'retrieveCodeActions':
-				const codeActionPromise = this.retrieveCodeActions(document, e.body.tokens);
+			}
+		});
+
+		// Listen for messages from the webview
+		webviewPanel.webview.onDidReceiveMessage(e => {
+
+			switch (e.type) {
+				case 'update':
+					this.updateTextDocument(document, e.text);
+					break;
+				case 'requestUpdate':
+					updateWebview();
+					break;
+				case 'renameToken':
+					this.renameToken(document, e.body.token, e.body.newName);
+					break;
+				case 'retrieveCodeActions':
+					const codeActionPromise = this.retrieveCodeActions(document, e.body.tokens);
 
 
-				codeActionPromise.then((codeActions: any) => {
-					this.codeActionCache = codeActions;
+					codeActionPromise.then((codeActions: any) => {
+						this.codeActionCache = codeActions;
 
-					// Get only the names
-					const names = codeActions.map((action: any) => action.title);
+						// Get only the names
+						const names = codeActions.map((action: any) => action.title);
 
-					// Send the code actions back
-					webviewPanel.webview.postMessage({
-						type: 'codeActions',
-						body: {
-							actionNames: names,
-						}
+						// Send the code actions back
+						webviewPanel.webview.postMessage({
+							type: 'codeActions',
+							body: {
+								actionNames: names,
+							}
+						});
 					});
-				});
-				break;
+					break;
 				case 'performAction':
+					// May be async
 					this.performAction(document, e.body.actionName);
 					break;
 			}
 		}
-	);
+		);
 
-    // Print out hello!
-    console.log('Blitz Editor accessed');
+		// Print out hello!
+		console.log('Blitz Editor accessed');
 
-    updateWebview();
-  }
+		updateWebview();
+	}
 
-  
+
 	/**
 	 * Get the static html used for the editor webviews.
 	 */
@@ -132,25 +133,25 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			</html>`;
 	}
 
-		/**
-	 * Write out the json to a given document.
-	 */
-		private updateTextDocument(document: vscode.TextDocument, txt: string) {
-			const edit = new vscode.WorkspaceEdit();
-	
-			// Just replace the entire document every time for this example extension.
-			// A more complete extension should compute minimal edits instead.
-			edit.replace(
-				document.uri,
-				new vscode.Range(0, 0, document.lineCount, 0),
-				txt);
-				
-			// Print out entire document text
-			var outcome = vscode.workspace.applyEdit(edit);
-			console.log(document.getText());
+	/**
+ * Write out the json to a given document.
+ */
+	private updateTextDocument(document: vscode.TextDocument, txt: string) {
+		const edit = new vscode.WorkspaceEdit();
 
-			return outcome;
-		}
+		// Just replace the entire document every time for this example extension.
+		// A more complete extension should compute minimal edits instead.
+		edit.replace(
+			document.uri,
+			new vscode.Range(0, 0, document.lineCount, 0),
+			txt);
+
+		// Print out entire document text
+		var outcome = vscode.workspace.applyEdit(edit);
+		console.log(document.getText());
+
+		return outcome;
+	}
 
 	renameToken(document: vscode.TextDocument, token: Token, newName: string) {
 		let uri = document.uri;
@@ -180,53 +181,78 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		return possibleActions;
 	}
 
-	performAction(document: vscode.TextDocument, actionName: string) {
+	async performAction(document: vscode.TextDocument, actionName: string) {
 		// Get action from cache
-		let action = this.codeActionCache.find((action: any) => action.title === actionName);
+		let action: vscode.CodeAction = this.codeActionCache.find((action: any) => action.title === actionName);
 
+		// Typescript refactors need to be resolved before their edits are exposed
+		// We also dodge the telemetry call with this, for whatever it's worth.
+		if (action.command?.command.startsWith('_typescript')) {
+			const cancelTok = new vscode.CancellationTokenSource();
+
+			if (action.command?.arguments === undefined) {
+				console.log('No arguments for Typescript action');
+				return;
+			}
+
+			for (let i = 0; i < action.command.arguments.length; i++) {
+				const act = action.command?.arguments[i].codeAction;
+				await act.resolve(cancelTok.token)
+
+				// Don't perform the parent action, just chain the children actions.
+				this.performActionRaw(document, act);
+			}
+		}
+		else {
+			this.performActionRaw(document, action);
+		}
+	}
+
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
 
-		// Get every text edit's text
-		const textEdits = edit.entries();
+		if (edit !== undefined) {
 
-		// Fill in variables
-		textEdits.forEach((textEdit) => {
-			const [uri, edits] = textEdit;
+			// Get every text edit's text
+			const textEdits = edit.entries();
 
-			edits.forEach((edit) => {
+			// Fill in variables
+			textEdits.forEach((textEdit) => {
+				const [uri, edits] = textEdit;
 
-				// Some regex that ChatGPT came up with
-				let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
-					// return this.variableMap[p1];
+				edits.forEach((edit) => {
 
-					console.log(match)
-					return 'test';
+					// Some regex that ChatGPT came up with
+					let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
+						// return this.variableMap[p1];
+
+						console.log(match)
+						return 'test';
+					});
+
+					// Do it again for the other var format
+					newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
+						// return this.variableMap[p1];
+
+						console.log(match)
+						return 'test';
+					});
+
+					edit.newText = newText;
 				});
-
-				// Do it again for the other var format
-				newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
-					// return this.variableMap[p1];
-
-					console.log(match)
-					return 'test';
-				});
-
-				edit.newText = newText;
 			});
-		});
 
 
-		vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
-
-
+			vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
+		}
 
 		// Command that gets run after
 		if (action.command !== undefined) {
 			let command = action.command.command;
 			let args = action.command.arguments;
 
-			let allArgs = [command].concat(args);
+			let allArgs = [command].concat(args!);
 			console.log(allArgs);
 
 			vscode.commands.executeCommand.apply(null, allArgs as any);
