@@ -31,6 +31,10 @@
       {
         "command": "blitzFactor.renameTest",
         "title": "Rename Test"
+      },
+      {
+        "command": "blitzFactor.snippetTest",
+        "title": "Snippet Test"
       }
     ],
     "customEditors": [

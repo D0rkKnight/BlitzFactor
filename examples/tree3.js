@@ -11,6 +11,7 @@
  * @return Array array containing the shortest distances from the given start node to each other node
  */
 const bfs = function (graph, start) {
+
     //A Queue to manage the nodes that have yet to be visited
     var queue = [];
     //Adding the node to start from
@@ -48,11 +49,11 @@ const bfs = function (graph, start) {
     return distances;
 };
 
-module.exports = {bfs};
+module.exports = { bfs };
 
 
 // Write DFS in JavaScript
- 
+
 // Path: tree4.js
 // SRC: https://www.algorithms-and-technologies.com/dfs/javascript
 

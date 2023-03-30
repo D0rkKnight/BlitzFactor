@@ -92,4 +92,13 @@ export default class Editor {
   static setCodeActionCache(actionNames: string[]) {
     this.actionNames = actionNames;
   }
+
+  static performAction(actionName: string) {
+    vscode.postMessage({
+      type: "performAction",
+      body: {
+        actionName: actionName,
+      },
+    });
+  }
 }

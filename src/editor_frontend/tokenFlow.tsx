@@ -74,7 +74,18 @@ export default function TokenFlow({ tree }) {
         anchorReference="anchorPosition"
         anchorPosition={anchorPosFromTL(selectMenuPos)}
       >
-        {Editor.actionNames}
+        {Editor.actionNames.map((name) => {
+          return (
+            <MenuItem
+              onClick={() => {
+                Editor.performAction(name);
+                setSelectMenuOpened(false);
+              }}
+            >
+              {name}
+            </MenuItem>
+          );
+        })}
       </Menu>
       {Token.tokenToReact(tree as Token, false, setHover, false)}
     </div>
