@@ -3,6 +3,7 @@ import { getNonce } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
+import CodeActionDescription from './CodeActionDescription';
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
@@ -18,7 +19,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	constructor(private readonly context: vscode.ExtensionContext) { }
 
-	private codeActionCache: any = {};
+	private codeActionCache: vscode.CodeAction[] = [];
+	private caDescCache: CodeActionDescription[] = [];
 
 	public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
 		webviewPanel.webview.options = {
@@ -60,24 +62,20 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 					const codeActionPromise = this.retrieveCodeActions(document, e.body.tokens);
 
 
-					codeActionPromise.then((codeActions: any) => {
-						this.codeActionCache = codeActions;
-
-						// Get only the names
-						const names = codeActions.map((action: any) => action.title);
+					codeActionPromise.then((codeActions: { actions: vscode.CodeAction[], descriptions: CodeActionDescription[]}) => {
+						this.codeActionCache = codeActions.actions;
+						this.caDescCache = codeActions.descriptions;
 
 						// Send the code actions back
 						webviewPanel.webview.postMessage({
 							type: 'codeActions',
-							body: {
-								actionNames: names,
-							}
+							body: this.caDescCache
 						});
 					});
 					break;
 				case 'performAction':
 					// May be async
-					this.performAction(document, e.body.actionName);
+					this.performAction(document, e.body.actionName, e.body.vars);
 					break;
 			}
 		}
@@ -166,7 +164,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		});
 	}
 
-	async retrieveCodeActions(document: vscode.TextDocument, tokens: Token[]) {
+	async retrieveCodeActions(document: vscode.TextDocument, tokens: Token[]): Promise<{ actions: vscode.CodeAction[], descriptions: CodeActionDescription[]}> {
 
 		let uri = document.uri;
 		let selections = tokens.map((token) => {
@@ -176,14 +174,53 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 		// Get selection
 		let selection = selections[0]
-		let possibleActions = await vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
+		let possibleActions: vscode.CodeAction[] = await vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
 
-		return possibleActions;
+		// Go through the first order edits of each and extract any TextMate variables
+		// This is a bit of a hack, but it's the only way to get the variable names
+		// from the code actions.
+		const snippetVars = possibleActions.map((action: vscode.CodeAction) => {
+			if (action.edit !== undefined) {
+				// For each edit
+				const edits = action.edit.entries().flatMap(([uri, edits]) => edits);
+				const variables: string[] = [];
+
+				edits.forEach((edit) => {
+
+					// Look for entries that match the regex
+					edit.newText.match(/\$[a-zA-Z0-9_:]*\$/g)?.forEach((match: string) => {
+
+						if (variables.indexOf(match) === -1) {
+							variables.push(match);
+						}
+
+					});
+
+					edit.newText.match(/\${[a-zA-Z0-9_:]*}/g)?.forEach((match: string) => {
+						
+						if (variables.indexOf(match) === -1) {
+							variables.push(match);
+						}
+					});
+				});
+				
+				return variables;
+			}
+		});
+
+		const descriptions: CodeActionDescription[] = possibleActions.map((action: vscode.CodeAction, index: number) => {
+			return {
+				title: action.title,
+				variables: snippetVars[index],
+			}
+		});
+
+		return {actions: possibleActions, descriptions: descriptions};
 	}
 
-	async performAction(document: vscode.TextDocument, actionName: string) {
+	async performAction(document: vscode.TextDocument, actionName: string, vars: any) {
 		// Get action from cache
-		let action: vscode.CodeAction = this.codeActionCache.find((action: any) => action.title === actionName);
+		const action: vscode.CodeAction = this.codeActionCache.find((action: vscode.CodeAction) => action.title === actionName)!;
 
 		// Typescript refactors need to be resolved before their edits are exposed
 		// We also dodge the telemetry call with this, for whatever it's worth.
@@ -200,15 +237,15 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				await act.resolve(cancelTok.token)
 
 				// Don't perform the parent action, just chain the children actions.
-				this.performActionRaw(document, act);
+				this.performActionRaw(document, act, vars);
 			}
 		}
 		else {
-			this.performActionRaw(document, action);
+			this.performActionRaw(document, action, vars);
 		}
 	}
 
-	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction) {
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, vars: any) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
 
@@ -225,18 +262,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 					// Some regex that ChatGPT came up with
 					let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
-						// return this.variableMap[p1];
-
-						console.log(match)
-						return 'test';
+						return vars[match];
 					});
 
 					// Do it again for the other var format
 					newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
-						// return this.variableMap[p1];
-
-						console.log(match)
-						return 'test';
+						return vars[match];
 					});
 
 					edit.newText = newText;

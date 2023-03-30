@@ -1,6 +1,7 @@
 import Tokenizer from "../tokenizer";
 import SyntaxTree from "./SyntaxTree";
 import Token from "../token";
+import CodeActionDescription from "../CodeActionDescription";
 
 declare var acquireVsCodeApi: any;
 
@@ -87,18 +88,26 @@ export default class Editor {
     });
   }
 
-  static actionNames = [] as string[];
+  static actionCache: CodeActionDescription[] = [];
 
-  static setCodeActionCache(actionNames: string[]) {
-    this.actionNames = actionNames;
+  static setCodeActionCache(actions: CodeActionDescription[]) {
+    this.actionCache = actions;
   }
 
-  static performAction(actionName: string) {
+  static performAction(actionName: string, vars: any) {
     vscode.postMessage({
       type: "performAction",
       body: {
         actionName: actionName,
+        vars: vars,
       },
     });
+  }
+
+  static getMapperMenuVars(actionName: string): string[] | undefined {
+    if (this.actionCache.length === 0) return [];
+
+    return this.actionCache.find((action) => action.title === actionName)
+      ?.variables;
   }
 }

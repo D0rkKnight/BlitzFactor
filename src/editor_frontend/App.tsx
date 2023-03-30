@@ -12,6 +12,7 @@ import Highlighter from "./Highlighter";
 
 import { Menu } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
+import MapperMenu from "./MapperMenu";
 
 export default function App() {
   const [tokens, setTokens] = React.useState(null as Token | null);
@@ -50,7 +51,7 @@ export default function App() {
           Editor.onUpdate(message.tree);
           break;
         case "codeActions":
-          Editor.setCodeActionCache(message.body.actionNames);
+          Editor.setCodeActionCache(message.body);
           break;
       }
     });
@@ -71,6 +72,9 @@ export default function App() {
 
   const [selectMenuOpened, setSelectMenuOpened] = React.useState(false);
   const [selectMenuPos, setSelectMenuPos] = React.useState({ x: 0, y: 0 });
+
+  const [mapperMenuOpened, setMapperMenuOpened] = React.useState(false);
+  const [selectedActionTitle, setSelectedActionTitle] = React.useState("");
 
   let radialMenu = null as JSX.Element | null;
   if (radialMenuOpened) {
@@ -101,6 +105,8 @@ export default function App() {
     return { top: pos.y, left: pos.x };
   };
 
+  const mapperMenuVars = Editor.getMapperMenuVars(selectedActionTitle);
+
   return (
     <div onContextMenu={onContextMenu}>
       {radialMenu}
@@ -110,19 +116,32 @@ export default function App() {
         anchorReference="anchorPosition"
         anchorPosition={anchorPosFromTL(selectMenuPos)}
       >
-        {Editor.actionNames.map((name) => {
+        {Editor.actionCache.map((desc) => {
           return (
             <MenuItem
               onClick={() => {
-                Editor.performAction(name);
+                // Editor.performAction(desc.title);
+                setSelectedActionTitle(desc.title);
+                setMapperMenuOpened(true);
                 setSelectMenuOpened(false);
               }}
             >
-              {name}
+              {desc.title}
             </MenuItem>
           );
         })}
       </Menu>
+      <MapperMenu
+        open={mapperMenuOpened}
+        variables={mapperMenuVars}
+        onSubmit={(vars: any) => {
+          Editor.performAction(selectedActionTitle, vars);
+          setMapperMenuOpened(false);
+        }}
+        onCancel={() => {
+          setMapperMenuOpened(false);
+        }}
+      ></MapperMenu>
       <DndProvider backend={HTML5Backend}>{treeBlock}</DndProvider>;
     </div>
   );

@@ -8,6 +8,7 @@ import { ComponentStory } from "@storybook/react";
 import Select from "react-select";
 import { Menu } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
+import MapperMenu from "../editor_frontend/MapperMenu";
 
 export default {
   title: "Example/RadialMenu",
@@ -59,4 +60,9 @@ export const menu = () => {
       <MenuItem>Item 2</MenuItem>
     </Menu>
   );
+};
+
+// At least provide this for snippets
+export const mapperMenu = () => {
+  return <MapperMenu />;
 };
