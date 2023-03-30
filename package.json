@@ -45,7 +45,8 @@
           {
             "filenamePattern": "*.js"
           }
-        ]
+        ],
+        "priority": "option"
       }
     ],
     "menus": {
