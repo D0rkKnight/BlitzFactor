@@ -7,6 +7,12 @@ import TokenBlock from "./tokenBlock";
 import TokenFlow from "./tokenFlow";
 import Token from "../token";
 
+import RadialMenu from "./RadialMenu";
+import Highlighter from "./Highlighter";
+
+import { Menu } from "@mui/material";
+import MenuItem from "@mui/material/MenuItem";
+
 export default function App() {
   const [tokens, setTokens] = React.useState(null as Token | null);
   const [selectedLines, setSelectedLines] = React.useState([] as number[]);
@@ -59,12 +65,65 @@ export default function App() {
     treeBlock = <TokenFlow tree={tokens} />;
   }
 
-  return (
-    <DndProvider backend={HTML5Backend}>
-      {treeBlock}
+  // Provide radial menu here
+  const [radialMenuOpened, setRadialMenuOpened] = React.useState(false);
+  const [radialMenuPos, setRadialMenuPos] = React.useState({ x: 0, y: 0 });
 
-      <p> This works at least </p>
-      {JSON.stringify(tokens)}
-    </DndProvider>
+  const [selectMenuOpened, setSelectMenuOpened] = React.useState(false);
+  const [selectMenuPos, setSelectMenuPos] = React.useState({ x: 0, y: 0 });
+
+  let radialMenu = null as JSX.Element | null;
+  if (radialMenuOpened) {
+    let txt = Highlighter.deepestToken?.text;
+
+    // Generate the dropdown menu button
+    const onDropdownClick = (e) => {
+      setRadialMenuOpened(false);
+      setSelectMenuOpened(true);
+      setSelectMenuPos({ x: e.clientX, y: e.clientY });
+    };
+
+    radialMenu = (
+      <RadialMenu radius={50} position={radialMenuPos}>
+        <button onClick={onDropdownClick}>Show Code Actions</button>
+      </RadialMenu>
+    );
+  }
+
+  // Set radial menu opened if right click
+  function onContextMenu(e: React.MouseEvent) {
+    e.preventDefault();
+    setRadialMenuOpened(true);
+    setRadialMenuPos({ x: e.clientX, y: e.clientY });
+  }
+
+  const anchorPosFromTL = (pos: { x: number; y: number }) => {
+    return { top: pos.y, left: pos.x };
+  };
+
+  return (
+    <div onContextMenu={onContextMenu}>
+      {radialMenu}
+      <Menu
+        open={selectMenuOpened}
+        onClose={() => setSelectMenuOpened(false)}
+        anchorReference="anchorPosition"
+        anchorPosition={anchorPosFromTL(selectMenuPos)}
+      >
+        {Editor.actionNames.map((name) => {
+          return (
+            <MenuItem
+              onClick={() => {
+                Editor.performAction(name);
+                setSelectMenuOpened(false);
+              }}
+            >
+              {name}
+            </MenuItem>
+          );
+        })}
+      </Menu>
+      <DndProvider backend={HTML5Backend}>{treeBlock}</DndProvider>;
+    </div>
   );
 }

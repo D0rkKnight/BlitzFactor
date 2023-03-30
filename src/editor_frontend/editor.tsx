@@ -31,7 +31,7 @@ export default class Editor {
     tokens: [] as string[],
   };
 
-  static onUpdate(message: any) {
+  static onUpdate(message: Token) {
     let filtered = Tokenizer.condenseTree(message);
 
     if (filtered != null) {

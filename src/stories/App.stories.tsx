@@ -14,31 +14,23 @@ import TokenFlow from "../editor_frontend/tokenFlow";
 
 import { configure } from "@storybook/react";
 import RadialMenu from "../editor_frontend/RadialMenu";
+import App from "../editor_frontend/App";
+
+import tree1 from "./tree_jsons/tree1.json";
 
 export default {
-  title: "Example/Token",
-  component: TokenFlow,
+  title: "Example/App",
+  component: App,
 };
 
-const Template: ComponentStory<typeof TokenFlow> = (args) => {
-  args.tree = Tokenizer.condenseTree(args.tree as unknown as Token);
+export const Default = (args) => {
+  // Wait half a second then send the message for the tree
+  setTimeout(() => {
+    window.postMessage({
+      type: "update",
+      tree: tree1,
+    });
+  }, 500);
 
-  // Do some backend stuff
-  Editor.setMockSyntaxTree(new SyntaxTree(args.tree as unknown as Token));
-
-  return <TokenFlow {...args} />;
+  return <App />;
 };
-
-const flows = [] as ComponentStory<typeof TokenFlow>[];
-for (var flowInfo in superTree) {
-  const flow = Template.bind({});
-  flow.args = {
-    tree: superTree[flowInfo]["tree"],
-  };
-
-  flows.push(flow);
-}
-
-export const flow1 = flows[0];
-export const flow2 = flows[1];
-export const flow3 = flows[2];
