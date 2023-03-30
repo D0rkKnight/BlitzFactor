@@ -152,8 +152,14 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 
 	renameToken(document: vscode.TextDocument, token: Token, newName: string) {
+		this.renameUtil(document, new vscode.Position(token.start[0], token.start[1]), newName);
+	}
+
+	
+
+	private renameUtil(document: vscode.TextDocument, pos: vscode.Position, newName: string) {
 		let uri = document.uri;
-		let position = new vscode.Position(token.start[0], token.start[1]);
+		let position = pos;
 
 		// Perform a rename on the current selected symbol
 		vscode.commands.executeCommand("vscode.executeDocumentRenameProvider", uri, position, newName).then((result: any) => {
@@ -237,7 +243,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				await act.resolve(cancelTok.token)
 
 				// Don't perform the parent action, just chain the children actions.
-				this.performActionRaw(document, act, vars);
+				this.performActionRaw(document, act, vars, () => {
+					if (act.renameLocation !== undefined) {
+						// Watch the off by one.
+						this.renameUtil(document, new vscode.Position(act.renameLocation.line-1, act.renameLocation.offset-1), "Rename")
+					}
+				});
 			}
 		}
 		else {
@@ -245,7 +256,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 	}
 
-	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, vars: any) {
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, vars: any, postProcess?: () => void) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
 
@@ -282,11 +293,18 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		if (action.command !== undefined) {
 			let command = action.command.command;
 			let args = action.command.arguments;
-
 			let allArgs = [command].concat(args!);
-			console.log(allArgs);
 
-			vscode.commands.executeCommand.apply(null, allArgs as any);
+			await vscode.commands.executeCommand.apply(null, allArgs as any);
+		}
+
+		// Some after the fact processing
+		// We need to update the document
+
+		if (postProcess !== undefined) {
+
+				postProcess(); // See if a timeout does anything
+
 		}
 	}
 }
