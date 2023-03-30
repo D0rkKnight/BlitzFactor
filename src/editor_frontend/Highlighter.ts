@@ -12,6 +12,9 @@ export default class Highlighter {
   static deepestToken: Token | null = null; // Deepest highlighted token
   static adjToken: Token | null = null; // Adjusted highlighted token (greatest parent token that is left adjusted with deepest token)
 
+  // Also handle selection stuff for now
+  static rightClickQueried: Token[] = [];
+
   static setHighlightInclusion(token: Token, include: boolean) {
     if (include && !this.highlightedTokens.includes(token)) {
       this.highlightedTokens.push(token);
@@ -68,6 +71,17 @@ export default class Highlighter {
 
     return this.adjToken === token;
 
+  }
+
+  static setRightClickCacheFromHighlights() {
+    this.rightClickQueried = [];
+
+    if (this.deepestToken !== null) {
+      this.rightClickQueried.push(this.deepestToken)
+    }
+
+    // Have editor update code actions menu
+    Editor.retrieveCodeActions(this.rightClickQueried);
   }
 
 }

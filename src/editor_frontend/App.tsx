@@ -43,6 +43,9 @@ export default function App() {
         case "update":
           Editor.onUpdate(message.tree);
           break;
+        case "codeActions":
+          Editor.setCodeActionCache(message.body.actionNames);
+          break;
       }
     });
 

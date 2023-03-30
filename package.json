@@ -31,6 +31,10 @@
       {
         "command": "blitzFactor.renameTest",
         "title": "Rename Test"
+      },
+      {
+        "command": "blitzFactor.snippetTest",
+        "title": "Snippet Test"
       }
     ],
     "customEditors": [
@@ -102,6 +106,9 @@
     "@babel/preset-env": "^7.20.2",
     "@babel/preset-react": "^7.18.6",
     "@dnd-kit/core": "^6.0.8",
+    "@emotion/react": "^11.10.6",
+    "@emotion/styled": "^11.10.6",
+    "@mui/material": "^5.11.15",
     "babel-loader": "^9.1.2",
     "css-loader": "^6.7.3",
     "dnd-kit": "^0.0.0",
@@ -110,11 +117,13 @@
     "html-webpack-plugin": "^5.5.0",
     "nearley": "^2.20.1",
     "process": "^0.11.10",
+    "prop-types": "^15.8.1",
     "react": "^18.2.0",
     "react-dnd": "^16.0.1",
     "react-dnd-html5-backend": "^16.0.1",
     "react-dom": "^18.2.0",
     "react-radial": "^1.0.8",
+    "react-select": "^5.7.2",
     "style-loader": "^3.3.1",
     "tree-sitter": "^0.20.1",
     "tree-sitter-cli": "^0.20.7",

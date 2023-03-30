@@ -18,6 +18,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
   constructor(private readonly context: vscode.ExtensionContext) {}
 
+  private codeActionCache: any = {};
+
   public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
     webviewPanel.webview.options = {
       enableScripts: true
@@ -54,6 +56,28 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			case 'renameToken':
 				this.renameToken(document, e.body.token, e.body.newName);
 				break;
+			case 'retrieveCodeActions':
+				const codeActionPromise = this.retrieveCodeActions(document, e.body.tokens);
+
+
+				codeActionPromise.then((codeActions: any) => {
+					this.codeActionCache = codeActions;
+
+					// Get only the names
+					const names = codeActions.map((action: any) => action.title);
+
+					// Send the code actions back
+					webviewPanel.webview.postMessage({
+						type: 'codeActions',
+						body: {
+							actionNames: names,
+						}
+					});
+				});
+				break;
+				case 'performAction':
+					this.performAction(document, e.body.actionName);
+					break;
 			}
 		}
 	);
@@ -79,6 +103,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
 
+		// PREV CSP: <meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+
 		return /* html */`
 			<!DOCTYPE html>
 			<html lang="en">
@@ -89,7 +115,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				Use a content security policy to only allow loading images from https or from our extension directory,
 				and only allow scripts that have a specific nonce.
 				-->
-				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource}; script-src 'nonce-${nonce}';">
+
+				<meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src ${webview.cspSource}; style-src ${webview.cspSource} 'unsafe-inline'; script-src 'nonce-${nonce}';">
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -136,6 +163,74 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			vscode.workspace.applyEdit(result as vscode.WorkspaceEdit);
 
 		});
+	}
+
+	async retrieveCodeActions(document: vscode.TextDocument, tokens: Token[]) {
+
+		let uri = document.uri;
+		let selections = tokens.map((token) => {
+			return new vscode.Selection(token.start[0], token.start[1], token.end[0], token.end[1]);
+		});
+
+
+		// Get selection
+		let selection = selections[0]
+		let possibleActions = await vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
+
+		return possibleActions;
+	}
+
+	performAction(document: vscode.TextDocument, actionName: string) {
+		// Get action from cache
+		let action = this.codeActionCache.find((action: any) => action.title === actionName);
+
+		// Apply the edits (this needs to happen first)
+		const edit = action.edit as vscode.WorkspaceEdit;
+
+		// Get every text edit's text
+		const textEdits = edit.entries();
+
+		// Fill in variables
+		textEdits.forEach((textEdit) => {
+			const [uri, edits] = textEdit;
+
+			edits.forEach((edit) => {
+
+				// Some regex that ChatGPT came up with
+				let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
+					// return this.variableMap[p1];
+
+					console.log(match)
+					return 'test';
+				});
+
+				// Do it again for the other var format
+				newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
+					// return this.variableMap[p1];
+
+					console.log(match)
+					return 'test';
+				});
+
+				edit.newText = newText;
+			});
+		});
+
+
+		vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
+
+
+
+		// Command that gets run after
+		if (action.command !== undefined) {
+			let command = action.command.command;
+			let args = action.command.arguments;
+
+			let allArgs = [command].concat(args);
+			console.log(allArgs);
+
+			vscode.commands.executeCommand.apply(null, allArgs as any);
+		}
 	}
 }
 

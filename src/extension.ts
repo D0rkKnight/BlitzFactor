@@ -16,16 +16,16 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Create a split view and launch the blitz editor for the active file
 		// vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor');
-		
+
 		// Create a new editor window
-		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor', {viewColumn: vscode.ViewColumn.Beside});
+		vscode.commands.executeCommand('vscode.openWith', vscode.Uri.file(vscode.window.activeTextEditor?.document.fileName as string), 'blitzEditors.blitzEditor', { viewColumn: vscode.ViewColumn.Beside });
 
 	});
 
 	context.subscriptions.push(openSidePanel);
 	context.subscriptions.push(
 		BlitzEditorProvider.register(context));
-	
+
 	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.printActions', () => {
 
 		// Get cursor position
@@ -34,7 +34,6 @@ export function activate(context: vscode.ExtensionContext) {
 
 		// Get selection
 		let selection = vscode.window.activeTextEditor?.selection;
-
 		let possibleActions = vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
 
 		console.log("Querying possible actions", possibleActions)
@@ -105,11 +104,54 @@ export function activate(context: vscode.ExtensionContext) {
 		});
 	}));
 
+	context.subscriptions.push(vscode.commands.registerCommand('blitzFactor.snippetTest', () => {
+
+		// Get cursor position
+		let cursorPosition = vscode.window.activeTextEditor?.selection.active;
+		let uri = vscode.window.activeTextEditor?.document.uri;
+
+		// Get selection
+		let selection = vscode.window.activeTextEditor?.selection;
+		let possibleActions = vscode.commands.executeCommand('vscode.executeCodeActionProvider', uri, selection);
+
+		possibleActions.then((actions: any) => {
+
+			// Pick the first action and perform it
+
+			if (actions.length === 0) {
+				console.log('No actions available');
+				return;
+			}
+
+			const action = actions[2];
+
+			let snippet = "${1:array}.forEach(${2:element} => {\n\t$TM_SELECTED_TEXT$0\n});";
+
+			const snippetString = new vscode.SnippetString(snippet);
+			const editor = vscode.window.activeTextEditor!;
+			const insertPos = editor?.selection.active;
+			const edit = new vscode.WorkspaceEdit();
+			edit.set(editor.document.uri, [vscode.SnippetTextEdit.insert(insertPos, snippetString)])
+
+			void vscode.workspace.applyEdit(edit)
+
+			// Call it with the name
+
+			// editor.insertSnippet(action.edit as vscode.SnippetString);
+
+
+			// vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
+			// vscode.commands.executeCommand("editor.action.insertSnippet", {"snippet": "${1:array}.forEach(${2:element} => {\n\t$TM_SELECTED_TEXT$0\n});"});
+		});
+
+
+	}));
+
 	return {
 		context: context,
-		tokenizer: {class: Tokenizer, initPromise: tokenizerPromise}
+		tokenizer: { class: Tokenizer, initPromise: tokenizerPromise }
 	};
 }
 
 // This method is called when your extension is deactivated
-export function deactivate() {}
+export function deactivate() { }
