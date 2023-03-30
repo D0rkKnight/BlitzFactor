@@ -14,6 +14,8 @@ import { Menu } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
 import MapperMenu from "./MapperMenu";
 
+import "./style.scss";
+
 export default function App() {
   const [tokens, setTokens] = React.useState(null as Token | null);
   const [selectedLines, setSelectedLines] = React.useState([] as number[]);

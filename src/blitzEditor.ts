@@ -96,8 +96,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'dist', 'editor.js'));
 
-		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'src/editor_frontend', 'style.css'));
+		// Provide multiple css files
+		const styleMin = webview.asWebviewUri(vscode.Uri.joinPath(
+			this.context.extensionUri, 'dist', 'css', 'style.min.css'));
+		
+		const styleColors = webview.asWebviewUri(vscode.Uri.joinPath(
+			this.context.extensionUri, 'dist', 'css', 'textColors.min.css'));
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
@@ -119,7 +123,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<link href="${styleUri}" rel="stylesheet" />
+				<link rel="stylesheet" href="${styleMin}">
+				<link rel="stylesheet" href="${styleColors}">
 
 				<title>Blitz Editor</title>
 			</head>

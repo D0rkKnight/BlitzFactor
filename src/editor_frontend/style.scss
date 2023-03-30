@@ -1,7 +1,6 @@
 .flow-block {
-    background-color: #f5f5f5;
-    border: 1px solid #e5e5e5;
-    border-radius: 3px;
+    background-color: #292929;
+    outline: 2px solid #5e5e5e;
 
     display: flex;
     flex-direction: column;
@@ -13,6 +12,7 @@
 }
 
 .flow-indent {
+    background-color: #292929;
     margin-left: 20px;
 }
 
@@ -29,7 +29,7 @@
 .flow-line__text {
     font-size: 14px;
     line-height: 1.5;
-    color: #333;
+    color: #ffffff;
 
     padding: 5px;
     /* margin-bottom: 5px;
@@ -37,22 +37,32 @@
     margin: 5px;
 
     user-select: none;
+
+    font-family: Consolas, 'Courier New', monospace;
 }
 
 .tok-group_highlighted {
-    background-color: #d7e0ec;
+    outline-color: #666a6e;
+    background-color: #4b4b4b;
+    z-index: 17;
 }
 
 .tok-adj_highlighted {
-    background-color: #a5bbc9;
+    outline-color: #a5bbc9;
+    background-color: #525252;
+    z-index: 18;
 }
 
 .tok-deep_highlighted {
-    background-color: #94b7ba;
+    outline-color: #cbe5e7;
+    background-color: #5a5a5a;
+    z-index: 19;
 }
 
 .tok-selected {
-    background-color: #b2f8ce;
+    outline-color: #b2f8ce;
+    background-color: #5a5a5a;
+    z-index: 20;
 }
 
 .tok-input {

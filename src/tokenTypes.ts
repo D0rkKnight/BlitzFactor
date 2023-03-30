@@ -5,5 +5,10 @@ export enum TokenType {
     statement_block,
     punctuation,
     program,
+    operator,
+    string,
+    number,
+    comment,
+    keyword,
     other
 }

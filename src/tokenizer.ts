@@ -91,6 +91,16 @@ export default class Tokenizer {
                 return TokenType.statement_block;
             case "program":
                 return TokenType.program;
+            case "operator":
+                return TokenType.operator;
+            case "string":
+                return TokenType.string;
+            case "number":
+                return TokenType.number;
+            case "comment":
+                return TokenType.comment;
+            case "keyword":
+                return TokenType.keyword;
             case "(":
             case ")":
             case "{":

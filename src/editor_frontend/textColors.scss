@@ -1,0 +1,27 @@
+.text-color--identifier {
+    color: rgb(170, 170, 241);
+}
+
+.text-color--keyword {
+color: rgb(231, 126, 231);
+}
+
+.text-color--number {
+color: rgb(145, 231, 145);
+}
+
+.text-color--operator {
+color: rgb(233, 159, 159);
+}
+
+.text-color--string {
+color: rgb(224, 197, 147);
+}
+
+.text-color--comment {
+color: gray;
+}
+
+.text-color--other {
+color: rgb(255, 255, 255);
+}
