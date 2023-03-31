@@ -1,5 +1,5 @@
 import path = require('path');
-import { getNonce, vscodeRangeFromToken, fillInSnippetVars } from './util';
+import { getNonce, vscodeRangeFromToken, fillInSnippetVars, parseSnippet, varRegex } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
@@ -199,20 +199,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				edits.forEach((edit) => {
 
 					// Look for entries that match the regex
-					// Just don't fill this in since this doesn't seem to incorporate variables
-					// edit.newText.match(/\$[a-zA-Z0-9_:]*\$/g)?.forEach((match: string) => {
-
-					// 	if (variables.indexOf(match) === -1) {
-					// 		variables.push(match);
-					// 	}
-
-					// });
-
-					edit.newText.match(/\${[a-zA-Z0-9_:]*}/g)?.forEach((match: string) => {
-						
+					parseSnippet(edit.newText, [varRegex[1]], (match: string) => {
 						if (variables.indexOf(match) === -1) {
 							variables.push(match);
 						}
+
+						return match;
 					});
 				});
 				
@@ -259,6 +251,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				});
 			}
 		}
+
 		else {
 			this.performActionRaw(document, action, description, vars);
 		}
@@ -267,8 +260,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: any, postProcess?: () => void) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
-
 		const token = description.token;
+
 		// Add in some vars like the selection
 		const range = vscodeRangeFromToken(token);
 		vars['$TM_SELECTED_TEXT$'] = document.getText(range);
@@ -281,18 +274,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			// Fill in variables
 			textEdits.forEach((textEdit) => {
 				const [uri, edits] = textEdit;
-
 				edits.forEach((edit) => {
-
-					// Some regex that ChatGPT came up with
-					let newText = fillInSnippetVars(edit.newText, vars);
-
-					edit.newText = newText;
+					edit.newText = fillInSnippetVars(edit.newText, vars);
 				});
 			});
 
-
-			vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
+			vscode.workspace.applyEdit(edit as vscode.WorkspaceEdit);
 		}
 
 		// Command that gets run after
@@ -305,13 +292,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 
 		// Some after the fact processing
-		// We need to update the document
-
-		if (postProcess !== undefined) {
-
-				postProcess(); // See if a timeout does anything
-
-		}
+		if (postProcess !== undefined)
+				postProcess();
 	}
 }
 
