@@ -3,10 +3,6 @@ import * as React from "react";
 import Editor from "./editor";
 import Highlighter from "./Highlighter";
 import Token from "../token";
-import TokenBlock from "./tokenBlock";
-import RadialMenu from "./RadialMenu";
-import { CSSProperties } from "react";
-import { Button } from "../stories/examples/Button";
 
 export default function TokenFlow({ tree }) {
   // Just increment this or something when we want to rerender

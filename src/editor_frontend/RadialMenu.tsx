@@ -1,8 +1,15 @@
 import React from "react";
 import { CSSProperties } from "react";
 import PropTypes from "prop-types";
+import { handleClickOutside } from "./Utilities";
+import { ClickAwayListener } from "@mui/material";
 
-export default function RadialMenu({ children, radius = 50, position }) {
+export default function RadialMenu({
+  children,
+  radius = 50,
+  position,
+  deselectHandle,
+}) {
   // Spawn the children in a circle
   const childCount = React.Children.count(children);
   const angleStep = 360 / childCount;
@@ -36,7 +43,11 @@ export default function RadialMenu({ children, radius = 50, position }) {
     top: position.y,
   };
 
-  return <div style={radialMenuStyle}>{childElements}</div>;
+  return (
+    <ClickAwayListener onClickAway={deselectHandle}>
+      <div style={radialMenuStyle}>{childElements}</div>
+    </ClickAwayListener>
+  );
 }
 
 RadialMenu.propTypes = {
@@ -45,4 +56,5 @@ RadialMenu.propTypes = {
     x: PropTypes.number,
     y: PropTypes.number,
   }),
+  deselectHandle: PropTypes.func,
 };

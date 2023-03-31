@@ -1,16 +1,18 @@
-import { Button, Menu, TextField } from "@mui/material";
+import { Button, ClickAwayListener, Menu, TextField } from "@mui/material";
 import React from "react";
 import PropTypes from "prop-types";
+import { handleClickOutside } from "./Utilities";
 
 export default function MapperMenu({
   open = true,
   variables = ["Test Var 1", "Test Var 2"],
   onSubmit = (vars: string[]) => {},
-  onCancel = () => {},
+  cancelHandle = () => {},
 }) {
   const [variableValues, setVariableValues] = React.useState<any>({});
 
   return (
+    // <ClickAwayListener onClickAway={cancelHandle}>
     <Menu open={open}>
       {variables.map((variable, key) => (
         <TextField
@@ -32,8 +34,9 @@ export default function MapperMenu({
       >
         Submit
       </Button>
-      <Button onClick={onCancel}>Cancel</Button>
+      <Button onClick={cancelHandle}>Cancel</Button>
     </Menu>
+    // </ClickAwayListener>
   );
 }
 
@@ -42,5 +45,5 @@ MapperMenu.propTypes = {
   open: PropTypes.bool,
   variables: PropTypes.arrayOf(PropTypes.string),
   onSubmit: PropTypes.func,
-  onCancel: PropTypes.func,
+  cancelHandle: PropTypes.func,
 };

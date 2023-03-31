@@ -1,5 +1,5 @@
 import * as path from 'path';
-import { TokenType } from './tokenTypes';
+import { TokenType, WASMTypeToTokenType } from './tokenTypes';
 import Token from './token';
 
 export default class Tokenizer {
@@ -61,7 +61,7 @@ export default class Tokenizer {
 
         let token = new Token(
 
-            this.WASMTypeToTokenType(node.type),
+            WASMTypeToTokenType(node.type),
             node.type,
             [node.startPosition["row"], node.startPosition["column"]],
             [node.endPosition["row"], node.endPosition["column"]],
@@ -76,44 +76,6 @@ export default class Tokenizer {
         }
 
         return token;
-    }
-
-    // Hacky hack
-    private static WASMTypeToTokenType(type: string): TokenType {
-        switch (type) {
-            case "identifier":
-                return TokenType.identifier;
-            case "function_declaration":
-                return TokenType.function_declaration;
-            case "formal_parameters":
-                return TokenType.formal_parameters;
-            case "statement_block":
-                return TokenType.statement_block;
-            case "program":
-                return TokenType.program;
-            case "operator":
-                return TokenType.operator;
-            case "string":
-                return TokenType.string;
-            case "number":
-                return TokenType.number;
-            case "comment":
-                return TokenType.comment;
-            case "keyword":
-                return TokenType.keyword;
-            case "(":
-            case ")":
-            case "{":
-            case "}":
-            case ";":
-            case ",":
-            case ".":
-            case "[":
-            case "]":
-                return TokenType.punctuation;
-            default:
-                return TokenType.other;
-        }
     }
 
     public static condenseTree(token: Token) {
