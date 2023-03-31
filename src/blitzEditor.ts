@@ -199,13 +199,14 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				edits.forEach((edit) => {
 
 					// Look for entries that match the regex
-					edit.newText.match(/\$[a-zA-Z0-9_:]*\$/g)?.forEach((match: string) => {
+					// Just don't fill this in since this doesn't seem to incorporate variables
+					// edit.newText.match(/\$[a-zA-Z0-9_:]*\$/g)?.forEach((match: string) => {
 
-						if (variables.indexOf(match) === -1) {
-							variables.push(match);
-						}
+					// 	if (variables.indexOf(match) === -1) {
+					// 		variables.push(match);
+					// 	}
 
-					});
+					// });
 
 					edit.newText.match(/\${[a-zA-Z0-9_:]*}/g)?.forEach((match: string) => {
 						
@@ -223,6 +224,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			return {
 				title: action.title,
 				variables: snippetVars[index],
+				token: tokens[0] // Just use the first token for reference for now
 			}
 		});
 
@@ -232,6 +234,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	async performAction(document: vscode.TextDocument, actionName: string, vars: any) {
 		// Get action from cache
 		const action: vscode.CodeAction = this.codeActionCache.find((action: vscode.CodeAction) => action.title === actionName)!;
+		const description: CodeActionDescription = this.caDescCache.find((desc: CodeActionDescription) => desc.title === actionName)!;
 
 		// Typescript refactors need to be resolved before their edits are exposed
 		// We also dodge the telemetry call with this, for whatever it's worth.
@@ -248,7 +251,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				await act.resolve(cancelTok.token)
 
 				// Don't perform the parent action, just chain the children actions.
-				this.performActionRaw(document, act, vars, () => {
+				this.performActionRaw(document, act, description, vars, () => {
 					if (act.renameLocation !== undefined) {
 						// Watch the off by one.
 						this.renameUtil(document, new vscode.Position(act.renameLocation.line-1, act.renameLocation.offset-1), "Rename")
@@ -257,13 +260,17 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			}
 		}
 		else {
-			this.performActionRaw(document, action, vars);
+			this.performActionRaw(document, action, description, vars);
 		}
 	}
 
-	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, vars: any, postProcess?: () => void) {
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: any, postProcess?: () => void) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
+
+		// Add in some vars like the selection
+		const range = new vscode.Range(description.token.start[0], description.token.start[1], description.token.end[0], description.token.end[1]);
+		vars['$TM_SELECTED_TEXT$'] = document.getText(range);
 
 		if (edit !== undefined) {
 
@@ -278,11 +285,23 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 					// Some regex that ChatGPT came up with
 					let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
+						if (vars[match] === undefined)
+						{
+							console.log('Undefined variable: ' + match);
+							return;
+						}
+
 						return vars[match];
 					});
 
 					// Do it again for the other var format
 					newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
+						if (vars[match] === undefined)
+						{
+							console.log('Undefined variable: ' + match);
+							return;
+						}
+
 						return vars[match];
 					});
 
