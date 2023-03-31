@@ -1,5 +1,5 @@
 import path = require('path');
-import { getNonce } from './util';
+import { getNonce, vscodeRangeFromToken, fillInSnippetVars } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
@@ -237,7 +237,6 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		const description: CodeActionDescription = this.caDescCache.find((desc: CodeActionDescription) => desc.title === actionName)!;
 
 		// Typescript refactors need to be resolved before their edits are exposed
-		// We also dodge the telemetry call with this, for whatever it's worth.
 		if (action.command?.command.startsWith('_typescript')) {
 			const cancelTok = new vscode.CancellationTokenSource();
 
@@ -253,6 +252,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				// Don't perform the parent action, just chain the children actions.
 				this.performActionRaw(document, act, description, vars, () => {
 					if (act.renameLocation !== undefined) {
+
 						// Watch the off by one.
 						this.renameUtil(document, new vscode.Position(act.renameLocation.line-1, act.renameLocation.offset-1), "Rename")
 					}
@@ -268,8 +268,9 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
 
+		const token = description.token;
 		// Add in some vars like the selection
-		const range = new vscode.Range(description.token.start[0], description.token.start[1], description.token.end[0], description.token.end[1]);
+		const range = vscodeRangeFromToken(token);
 		vars['$TM_SELECTED_TEXT$'] = document.getText(range);
 
 		if (edit !== undefined) {
@@ -284,26 +285,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				edits.forEach((edit) => {
 
 					// Some regex that ChatGPT came up with
-					let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
-						if (vars[match] === undefined)
-						{
-							console.log('Undefined variable: ' + match);
-							return;
-						}
-
-						return vars[match];
-					});
-
-					// Do it again for the other var format
-					newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
-						if (vars[match] === undefined)
-						{
-							console.log('Undefined variable: ' + match);
-							return;
-						}
-
-						return vars[match];
-					});
+					let newText = fillInSnippetVars(edit.newText, vars);
 
 					edit.newText = newText;
 				});
