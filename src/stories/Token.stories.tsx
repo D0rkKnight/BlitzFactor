@@ -1,19 +1,14 @@
 import React from "react";
-import TokenBlock from "../editor_frontend/tokenBlock";
 import Token from "../token";
 import Tokenizer from "../tokenizer";
-import { TokenType } from "../tokenTypes";
 
-import "../editor_frontend/style.css";
+import "../editor_frontend/style.scss";
 import { ComponentStory } from "@storybook/react";
 import superTree from "./tree_jsons/superTree.json";
 
 import Editor from "../editor_frontend/editor";
 import SyntaxTree from "../editor_frontend/SyntaxTree";
 import TokenFlow from "../editor_frontend/tokenFlow";
-
-import { configure } from "@storybook/react";
-import RadialMenu from "../editor_frontend/RadialMenu";
 
 export default {
   title: "Example/Token",

@@ -12,7 +12,10 @@ import Highlighter from "./Highlighter";
 
 import { Menu } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
+import { Button } from "@mui/material";
 import MapperMenu from "./MapperMenu";
+
+import "./style.scss";
 
 export default function App() {
   const [tokens, setTokens] = React.useState(null as Token | null);
@@ -88,8 +91,16 @@ export default function App() {
     };
 
     radialMenu = (
-      <RadialMenu radius={50} position={radialMenuPos}>
-        <button onClick={onDropdownClick}>Show Code Actions</button>
+      <RadialMenu
+        radius={50}
+        position={radialMenuPos}
+        deselectHandle={() => {
+          setRadialMenuOpened(false);
+        }}
+      >
+        <Button onClick={onDropdownClick} variant={"contained"}>
+          Show Code Actions
+        </Button>
       </RadialMenu>
     );
   }
@@ -137,12 +148,14 @@ export default function App() {
         onSubmit={(vars: any) => {
           Editor.performAction(selectedActionTitle, vars);
           setMapperMenuOpened(false);
+
+          console.log(vars);
         }}
-        onCancel={() => {
+        cancelHandle={() => {
           setMapperMenuOpened(false);
         }}
       ></MapperMenu>
-      <DndProvider backend={HTML5Backend}>{treeBlock}</DndProvider>;
+      <DndProvider backend={HTML5Backend}>{treeBlock}</DndProvider>
     </div>
   );
 }

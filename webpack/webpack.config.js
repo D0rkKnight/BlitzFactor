@@ -63,6 +63,17 @@ const extensionConfig = {
           }
         ]
       },
+      {
+        test: /\.scss$/,
+        exclude: /node_modules/,
+        use: [
+            {
+                loader: 'file-loader',
+                options: { outputPath: 'css/', name: '[name].min.css'}
+            },
+            'sass-loader'
+        ]
+      }
     ]
   },
   plugins: [
@@ -82,15 +93,7 @@ const browserConfig = {
   output: {
     libraryTarget: 'umd',
   },
-
-  module: {
-    rules: [
-      {
-        test: /\.css$/,
-        use: ["style-loader", "css-loader"]
-      }
-    ]
-  },
+  
   devtool: 'inline-source-map',
 };
 

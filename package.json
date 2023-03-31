@@ -73,7 +73,8 @@
     "cosmos:export": "cosmos-export",
     "storybook": "start-storybook -p 6006",
     "build-storybook": "build-storybook",
-    "watch-json-writer": "webpack --watch --config webpack/json_writer.webpack.config.js"
+    "watch-json-writer": "webpack --watch --config webpack/json_writer.webpack.config.js",
+    "json-writer": "node ./dist/json_writer.js"
   },
   "devDependencies": {
     "@babel/core": "^7.21.3",
@@ -97,6 +98,8 @@
     "glob": "^8.1.0",
     "mocha": "^10.1.0",
     "node-polyfill-webpack-plugin": "^2.0.1",
+    "node-sass": "^8.0.0",
+    "sass-loader": "^13.2.2",
     "sinon": "^15.0.2",
     "ts-loader": "^9.4.2",
     "typescript": "^4.9.4",
@@ -110,6 +113,7 @@
     "@emotion/react": "^11.10.6",
     "@emotion/styled": "^11.10.6",
     "@mui/material": "^5.11.15",
+    "@storybook/addon-styling": "^0.3.2",
     "babel-loader": "^9.1.2",
     "css-loader": "^6.7.3",
     "dnd-kit": "^0.0.0",
@@ -125,6 +129,8 @@
     "react-dom": "^18.2.0",
     "react-radial": "^1.0.8",
     "react-select": "^5.7.2",
+    "resolve-url-loader": "^5.0.0",
+    "sass": "^1.60.0",
     "style-loader": "^3.3.1",
     "tree-sitter": "^0.20.1",
     "tree-sitter-cli": "^0.20.7",

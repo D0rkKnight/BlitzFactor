@@ -11,6 +11,10 @@ import Highlighter from "./Highlighter";
 import { TokenType } from "../tokenTypes";
 import TokRenameField from "./TokRenameField";
 
+import "./style.scss";
+import "./textColors.scss";
+import TokenText from "./TokenText";
+
 interface DragItem {
   line: number;
 }
@@ -155,7 +159,7 @@ export default function TokenBlock({
     });
   } else {
     // Only display text if it's a leaf
-    if (!renaming) text = <div className="flow-line__text">{tree.text}</div>;
+    if (!renaming) text = <TokenText tok={tree} />;
     else {
       text = (
         <TokRenameField

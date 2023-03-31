@@ -1,6 +1,6 @@
 import React from "react";
 
-import "../editor_frontend/style.css";
+import "../editor_frontend/style.scss";
 import RadialMenu from "../editor_frontend/RadialMenu";
 import RadialMenuDecorator from "./RadialMenuDecorator";
 import { ComponentStory } from "@storybook/react";

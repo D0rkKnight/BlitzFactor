@@ -1,5 +1,5 @@
 import path = require('path');
-import { getNonce } from './util';
+import { getNonce, vscodeRangeFromToken, fillInSnippetVars, parseSnippet, varRegex } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
@@ -96,8 +96,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		const scriptUri = webview.asWebviewUri(vscode.Uri.joinPath(
 			this.context.extensionUri, 'dist', 'editor.js'));
 
-		const styleUri = webview.asWebviewUri(vscode.Uri.joinPath(
-			this.context.extensionUri, 'src/editor_frontend', 'style.css'));
+		// Provide multiple css files
+		const styleMin = webview.asWebviewUri(vscode.Uri.joinPath(
+			this.context.extensionUri, 'dist', 'css', 'style.min.css'));
+		
+		const styleColors = webview.asWebviewUri(vscode.Uri.joinPath(
+			this.context.extensionUri, 'dist', 'css', 'textColors.min.css'));
 
 		// Use a nonce to whitelist which scripts can be run
 		const nonce = getNonce();
@@ -119,7 +123,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 				<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-				<link href="${styleUri}" rel="stylesheet" />
+				<link rel="stylesheet" href="${styleMin}">
+				<link rel="stylesheet" href="${styleColors}">
 
 				<title>Blitz Editor</title>
 			</head>
@@ -194,19 +199,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				edits.forEach((edit) => {
 
 					// Look for entries that match the regex
-					edit.newText.match(/\$[a-zA-Z0-9_:]*\$/g)?.forEach((match: string) => {
-
+					parseSnippet(edit.newText, [varRegex[1]], (match: string) => {
 						if (variables.indexOf(match) === -1) {
 							variables.push(match);
 						}
 
-					});
-
-					edit.newText.match(/\${[a-zA-Z0-9_:]*}/g)?.forEach((match: string) => {
-						
-						if (variables.indexOf(match) === -1) {
-							variables.push(match);
-						}
+						return match;
 					});
 				});
 				
@@ -218,6 +216,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			return {
 				title: action.title,
 				variables: snippetVars[index],
+				token: tokens[0] // Just use the first token for reference for now
 			}
 		});
 
@@ -227,9 +226,9 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	async performAction(document: vscode.TextDocument, actionName: string, vars: any) {
 		// Get action from cache
 		const action: vscode.CodeAction = this.codeActionCache.find((action: vscode.CodeAction) => action.title === actionName)!;
+		const description: CodeActionDescription = this.caDescCache.find((desc: CodeActionDescription) => desc.title === actionName)!;
 
 		// Typescript refactors need to be resolved before their edits are exposed
-		// We also dodge the telemetry call with this, for whatever it's worth.
 		if (action.command?.command.startsWith('_typescript')) {
 			const cancelTok = new vscode.CancellationTokenSource();
 
@@ -243,22 +242,29 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				await act.resolve(cancelTok.token)
 
 				// Don't perform the parent action, just chain the children actions.
-				this.performActionRaw(document, act, vars, () => {
+				this.performActionRaw(document, act, description, vars, () => {
 					if (act.renameLocation !== undefined) {
+
 						// Watch the off by one.
 						this.renameUtil(document, new vscode.Position(act.renameLocation.line-1, act.renameLocation.offset-1), "Rename")
 					}
 				});
 			}
 		}
+
 		else {
-			this.performActionRaw(document, action, vars);
+			this.performActionRaw(document, action, description, vars);
 		}
 	}
 
-	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, vars: any, postProcess?: () => void) {
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: any, postProcess?: () => void) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
+		const token = description.token;
+
+		// Add in some vars like the selection
+		const range = vscodeRangeFromToken(token);
+		vars['$TM_SELECTED_TEXT$'] = document.getText(range);
 
 		if (edit !== undefined) {
 
@@ -268,25 +274,12 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			// Fill in variables
 			textEdits.forEach((textEdit) => {
 				const [uri, edits] = textEdit;
-
 				edits.forEach((edit) => {
-
-					// Some regex that ChatGPT came up with
-					let newText = edit.newText.replace(/\$[a-zA-Z0-9_:]*\$/g, (match, p1) => {
-						return vars[match];
-					});
-
-					// Do it again for the other var format
-					newText = newText.replace(/\${[a-zA-Z0-9_:]*}/g, (match, p1) => {
-						return vars[match];
-					});
-
-					edit.newText = newText;
+					edit.newText = fillInSnippetVars(edit.newText, vars);
 				});
 			});
 
-
-			vscode.workspace.applyEdit(action.edit as vscode.WorkspaceEdit);
+			vscode.workspace.applyEdit(edit as vscode.WorkspaceEdit);
 		}
 
 		// Command that gets run after
@@ -299,13 +292,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 
 		// Some after the fact processing
-		// We need to update the document
-
-		if (postProcess !== undefined) {
-
-				postProcess(); // See if a timeout does anything
-
-		}
+		if (postProcess !== undefined)
+				postProcess();
 	}
 }
 
