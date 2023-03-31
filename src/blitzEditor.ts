@@ -264,7 +264,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			textEdits.forEach((textEdit) => {
 				const [uri, edits] = textEdit;
 				edits.forEach((edit) => {
-					edit.newText = fillInSnippetVars(edit.newText, vars);
+					edit.newText = fillInSnippetVars(edit.newText, vars, document, token);
 				});
 			});
 

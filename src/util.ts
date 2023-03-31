@@ -17,7 +17,7 @@ export function vscodeRangeFromToken(token: Token) {
 
 export const varRegex = [/\$[a-zA-Z0-9_:]*\$/g, /\${[a-zA-Z0-9_:]*}/g];
 
-export function fillInSnippetVars(str: string, vars: {}): string {
+export function fillInSnippetVars(str: string, vars: {}, document: vscode.TextDocument, token: Token): string {
 	const tabstops = getTabstops(str)
 
 	for (const key in vars) {
@@ -39,23 +39,10 @@ export function fillInSnippetVars(str: string, vars: {}): string {
 		tabstops.set(keyToSet, varValue);
 	}
 
-	// // Replace the tabstops with the variables
-	// for (let i = 0; i < tabstops.tabstops.size; i++) {
-	// 	const varValue = vars[i];
-
-	// 	if (varValue === undefined) {
-	// 		console.log('No variable name for tabstop ' + i);
-	// 		continue;
-	// 	}
-
-	// 	const tabstopIndex = (i+1) % tabstops.tabstops.size;
-	// 	tabstops.set(tabstopIndex, varValue);
-	// }
-
-	return tabstops.render(envVars());
+	return tabstops.render(envVars(document, token));
 }
 
-					// Look for entries that match the regex
+// Look for entries that match the regex
 export function getSnippetVars(str: string): string[] {
 	const variables: string[] = [];
 	const tabstops = getTabstops(str);
@@ -71,9 +58,9 @@ export function getTabstops(snippet: string) {
 	return tabstops;
 }
 
-function envVars() {
+function envVars(document: vscode.TextDocument, token: Token) {
 	return {
-		TM_SELECTED_TEXT: 'selected text',
+		TM_SELECTED_TEXT: token.text, // Huh I guess this works
 		TM_CURRENT_LINE: 'current line',
 		TM_CURRENT_WORD: 'current word',
 		TM_LINE_INDEX: 'line index',
