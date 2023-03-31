@@ -1,5 +1,5 @@
 import path = require('path');
-import { getNonce, vscodeRangeFromToken, fillInSnippetVars, parseSnippet, varRegex } from './util';
+import { getNonce, vscodeRangeFromToken, fillInSnippetVars, getTabstops, varRegex, getSnippetVars } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
@@ -197,15 +197,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				const variables: string[] = [];
 
 				edits.forEach((edit) => {
-
-					// Look for entries that match the regex
-					parseSnippet(edit.newText, [varRegex[1]], (match: string) => {
-						if (variables.indexOf(match) === -1) {
-							variables.push(match);
-						}
-
-						return match;
-					});
+					const varsInEdit = getSnippetVars(edit.newText);
+					variables.push(...varsInEdit);
 				});
 				
 				return variables;
@@ -223,7 +216,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		return {actions: possibleActions, descriptions: descriptions};
 	}
 
-	async performAction(document: vscode.TextDocument, actionName: string, vars: any) {
+	async performAction(document: vscode.TextDocument, actionName: string, vars: {}) {
 		// Get action from cache
 		const action: vscode.CodeAction = this.codeActionCache.find((action: vscode.CodeAction) => action.title === actionName)!;
 		const description: CodeActionDescription = this.caDescCache.find((desc: CodeActionDescription) => desc.title === actionName)!;
@@ -257,14 +250,10 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 	}
 
-	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: any, postProcess?: () => void) {
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: {}, postProcess?: () => void) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
 		const token = description.token;
-
-		// Add in some vars like the selection
-		const range = vscodeRangeFromToken(token);
-		vars['$TM_SELECTED_TEXT$'] = document.getText(range);
 
 		if (edit !== undefined) {
 
