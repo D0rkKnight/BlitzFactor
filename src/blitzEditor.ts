@@ -328,13 +328,22 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 		const customActions: CustomAction[] = [];
 
-		customActions.push( new CustomAction("Action 1", ["var1", "var2"], (doc: vscode.TextDocument, tok: Token, variables: {}) => {
+		customActions.push( new CustomAction("Action 1", ["var1", "var2"], async (doc: vscode.TextDocument, tok: Token, variables: {}) => {
 			console.log(variables["var1"]);
 			return undefined;
 		}));
 	
-		customActions.push( new CustomAction("Action 2", undefined, (doc: vscode.TextDocument, tok: Token, variables: {}) => {
+		customActions.push( new CustomAction("Action 2", undefined, async (doc: vscode.TextDocument, tok: Token, variables: {}) => {
 			console.log("Action 1");
+			return undefined;
+		}));
+
+		customActions.push( new CustomAction("Dependency Inversion", undefined, async (doc: vscode.TextDocument, tok: Token, variables: {}) => {
+
+			// Make new file for interface
+			
+
+
 			return undefined;
 		}));
 
@@ -345,7 +354,11 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	async performCustomAction(document: vscode.TextDocument, actionName: string, vars: {}, tok: Token) {
 		const action = this.customActions.find((action) => action.title === actionName)!;
-		action.execute(document, tok, vars);
+		const edit: vscode.WorkspaceEdit | undefined = await action.execute(document, tok, vars);
+
+		if (edit !== undefined) {
+			await vscode.workspace.applyEdit(edit);
+		}
 	}
 
 }

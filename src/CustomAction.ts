@@ -5,9 +5,9 @@ export default class CustomAction {
 
     public title: string;
     public variables: string[] | undefined;
-    public executeCB: (doc: vscode.TextDocument, token: Token, {}) => vscode.WorkspaceEdit | undefined;
+    public executeCB: (doc: vscode.TextDocument, token: Token, {}) => Promise<vscode.WorkspaceEdit | undefined>;
 
-    constructor(title: string, variables: string[] | undefined, executeCB: (doc: vscode.TextDocument, token: Token, {}) => vscode.WorkspaceEdit | undefined) {
+    constructor(title: string, variables: string[] | undefined, executeCB: (doc: vscode.TextDocument, token: Token, {}) => Promise<vscode.WorkspaceEdit | undefined>) {
         this.title = title;
         this.variables = variables;
         this.executeCB = executeCB;
@@ -20,8 +20,8 @@ export default class CustomAction {
         };
     }
 
-    public execute(doc: vscode.TextDocument, token: Token, variables: {}): vscode.WorkspaceEdit | undefined {
-        return this.executeCB(doc, token, variables);
+    public async execute(doc: vscode.TextDocument, token: Token, variables: {}): Promise<vscode.WorkspaceEdit | undefined> {
+        return await this.executeCB(doc, token, variables);
     }
 
 }
