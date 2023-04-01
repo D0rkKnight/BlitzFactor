@@ -22,7 +22,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	private codeActionCache: vscode.CodeAction[] = [];
 	private caDescCache: CodeActionDescription[] = [];
-	private snippetCache: vscode.SnippetString[] = [];
+	private snippetCache: string[] = []; // Just use strings for now
 	private snDescCache: SnippetDescription[] = [];
 
 	// Execute anything with these :3
@@ -72,7 +72,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 							type: 'sendActions',
 							body: {
 								caDesc: this.caDescCache, 
-								snDesc: [{name: 'Test Snippet', snippet: 'This is a test snippet'}, {name: 'Test Snippet 2', snippet: 'This is a test snippet 2'}],
+								snDesc: this.snDescCache,
 								customDesc: this.customActions.map(ca => ca.getDescription())
 							}
 						});
@@ -304,24 +304,58 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			this.caDescCache = out.descriptions;
 		});
 
-		const snippedPromise = this.retrieveSnippets(document, tokens).then((out: {snippets: vscode.SnippetString[], descriptions: SnippetDescription[]}) => {
+		const snippetPromise = this.retrieveSnippets(document, tokens).then((out: {snippets: string[], descriptions: SnippetDescription[]}) => {
 			this.snippetCache = out.snippets;
 			this.snDescCache = out.descriptions;
 		});
 
 		await caPromise;
+		await snippetPromise;
 		return;
 	}
 
-	async retrieveSnippets(document: vscode.TextDocument, tokens: Token[]): Promise<{ snippets: vscode.SnippetString[], descriptions: SnippetDescription[]}> {
+	/**
+	 * This is actually retrieving completions but that's a whole other issue entirely
+	 * @param document 
+	 * @param tokens 
+	 * @returns 
+	 */
+	async retrieveSnippets(document: vscode.TextDocument, tokens: Token[]): Promise<{ snippets: string[], descriptions: SnippetDescription[]}> {
 
 		//
 		// const snippets = await vscode.commands.executeCommand('editor.action.insertSnippet');
 
 		console.log("This isn't going to work for a bit");
-		
 
-		return {snippets: [], descriptions: []};
+		const completions: vscode.CompletionList = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', document.uri, new vscode.Position(0, 0), 'a'); // Get 10 elements
+		
+		const descriptions = [] as SnippetDescription[];
+		const snippets = [] as string[];
+		completions.items.forEach(element => {
+			if (element.insertText === undefined)
+				return;
+			if (typeof element.insertText !== 'string')
+				return;
+			if (element.label === undefined)
+				return;
+
+			const insertText = element.insertText as string;
+			
+			snippets.push(insertText);
+			descriptions.push({
+				name: element.label as string,
+				vars: getSnippetVars(insertText),
+				snippet: element.insertText as string,
+			});
+		});
+
+		// Cull both lists to size 10
+		if (snippets.length > 10) {
+			snippets.splice(10, snippets.length - 10);
+			descriptions.splice(10, descriptions.length - 10);
+		}
+
+		return {snippets: snippets, descriptions: descriptions};
 	}
 
 	generateCustomActions(): CustomAction[] {
@@ -341,7 +375,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		customActions.push( new CustomAction("Dependency Inversion", undefined, async (doc: vscode.TextDocument, tok: Token, variables: {}) => {
 
 			// Make new file for interface
-			
+
 
 
 			return undefined;
