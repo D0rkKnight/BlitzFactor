@@ -1,7 +1,7 @@
 import { Button, ClickAwayListener, Menu, TextField } from "@mui/material";
 import React from "react";
 import PropTypes from "prop-types";
-import { handleClickOutside } from "./Utilities";
+import { handleClickOutside } from "../Utilities";
 
 export default function MapperMenu({
   open = true,

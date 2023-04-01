@@ -3,29 +3,37 @@ import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
 import Editor from "./editor";
-import TokenBlock from "./tokenBlock";
-import TokenFlow from "./tokenFlow";
+import TokenBlock from "./TokenFlow/tokenBlock";
+import TokenFlow from "./TokenFlow/tokenFlow";
 import Token from "../token";
 
-import RadialMenu from "./RadialMenu";
+import RadialMenu from "./ContextMenu/RadialMenu";
 import Highlighter from "./Highlighter";
 
 import { Menu } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
 import { Button } from "@mui/material";
-import MapperMenu from "./MapperMenu";
+import MapperMenu from "./ContextMenu/MapperMenu";
 
-import "./style.scss";
+import "./style/style.scss";
+import RadialMenuButton from "./ContextMenu/RadialMenuButton";
+
+enum MenuType {
+  None,
+  Radial,
+  CodeActionList,
+  CodeActionMapper,
+  SnippetList,
+  CustomList,
+  CustomMapper,
+}
 
 export default function App() {
   const [tokens, setTokens] = React.useState(null as Token | null);
-  const [selectedLines, setSelectedLines] = React.useState([] as number[]);
 
   React.useEffect(() => {
     Editor.tokenChangeCB.push((newTokens: Token) => {
-      // var cloned = newTokens.slice();
-
-      // TODO: Perform a deep copy
+      // Don't bother with cloning the tokens for now
       let cloned = newTokens;
       setTokens(cloned);
     });
@@ -35,74 +43,62 @@ export default function App() {
     Editor.requestUpdate();
   }, []);
 
+  // Temp load screen before tokens come in
   let treeBlock = <p> Loading... </p>;
   if (tokens != null) {
-    // treeBlock = Token.tokenToReact(tokens);
     treeBlock = <TokenFlow tree={tokens} />;
   }
 
-  // Provide radial menu here
-  const [radialMenuOpened, setRadialMenuOpened] = React.useState(false);
-  const [radialMenuPos, setRadialMenuPos] = React.useState({ x: 0, y: 0 });
-
-  const [selectMenuOpened, setSelectMenuOpened] = React.useState(false);
-  const [selectMenuPos, setSelectMenuPos] = React.useState({ x: 0, y: 0 });
-
-  const [mapperMenuOpened, setMapperMenuOpened] = React.useState(false);
-  const [selectedActionTitle, setSelectedActionTitle] = React.useState("");
-
-  const [snippetMenuOpened, setSnippetMenuOpened] = React.useState(false);
-  const [snippetMenuPos, setSnippetMenuPos] = React.useState({ x: 0, y: 0 });
-
-  const [customMenuOpened, setCustomMenuOpened] = React.useState(false);
-  const [customMenuPos, setCustomMenuPos] = React.useState({ x: 0, y: 0 });
-  const [customMapperOpened, setCustomMapperOpened] = React.useState(false);
+  // States for menus
   const [selectedCustomActionTitle, setSelectedCustomActionTitle] =
     React.useState("");
+  const [selectedActionTitle, setSelectedActionTitle] = React.useState("");
+
+  const [currentMenu, setCurrentMenu] = React.useState(MenuType.None);
+  const [menuPos, setMenuPos] = React.useState({ x: 0, y: 0 });
 
   let radialMenu = null as JSX.Element | null;
-  if (radialMenuOpened) {
+  if (currentMenu === MenuType.Radial) {
     // Generate the dropdown menu button
-    const dropDownClickFactory = (
-      menuOpenSetter: (val: boolean) => void,
-      menuPosSetter: (val: { x: number; y: number }) => void
-    ) => {
+    const dropDownClickFactory = (newMenu: MenuType) => {
       return (e: React.MouseEvent) => {
-        setRadialMenuOpened(false);
-        menuOpenSetter(true);
-        menuPosSetter({ x: e.clientX, y: e.clientY });
+        setCurrentMenu(newMenu);
+        setMenuPos({ x: e.clientX, y: e.clientY });
       };
     };
+
+    const radialEntries = [
+      {
+        title: "Show Code Actions",
+        menu: MenuType.CodeActionList,
+      },
+      {
+        title: "Show Snippets",
+        menu: MenuType.SnippetList,
+      },
+      {
+        title: "Show Custom Actions",
+        menu: MenuType.CustomList,
+      },
+    ];
+
+    const radialChildren = radialEntries.map((entry) => {
+      return (
+        <RadialMenuButton onClick={dropDownClickFactory(entry.menu)}>
+          {entry.title}
+        </RadialMenuButton>
+      );
+    });
 
     radialMenu = (
       <RadialMenu
         radius={50}
-        position={radialMenuPos}
+        position={menuPos}
         deselectHandle={() => {
-          setRadialMenuOpened(false);
+          setCurrentMenu(MenuType.None);
         }}
       >
-        <Button
-          onClick={dropDownClickFactory(setSelectMenuOpened, setSelectMenuPos)}
-          variant={"contained"}
-        >
-          Show Code Actions
-        </Button>
-        <Button
-          onClick={dropDownClickFactory(
-            setSnippetMenuOpened,
-            setSnippetMenuPos
-          )}
-          variant={"contained"}
-        >
-          Show Snippets
-        </Button>
-        <Button
-          onClick={dropDownClickFactory(setCustomMenuOpened, setCustomMenuPos)}
-          variant={"contained"}
-        >
-          Show Custom
-        </Button>
+        {radialChildren}
       </RadialMenu>
     );
   }
@@ -110,8 +106,8 @@ export default function App() {
   // Set radial menu opened if right click
   function onContextMenu(e: React.MouseEvent) {
     e.preventDefault();
-    setRadialMenuOpened(true);
-    setRadialMenuPos({ x: e.clientX, y: e.clientY });
+    setCurrentMenu(MenuType.Radial);
+    setMenuPos({ x: e.clientX, y: e.clientY });
 
     // Kinda janky for now, cache the deepest highlighted token
     Highlighter.setRightClickCacheFromHighlights();
@@ -130,10 +126,10 @@ export default function App() {
     <div onContextMenu={onContextMenu}>
       {radialMenu}
       <Menu
-        open={selectMenuOpened}
-        onClose={() => setSelectMenuOpened(false)}
+        open={currentMenu === MenuType.CodeActionList}
+        onClose={() => setCurrentMenu(MenuType.None)}
         anchorReference="anchorPosition"
-        anchorPosition={anchorPosFromTL(selectMenuPos)}
+        anchorPosition={anchorPosFromTL(menuPos)}
       >
         <MenuItem>Code Actions</MenuItem>
         {Editor.codeActionDescriptions.map((desc) => {
@@ -142,8 +138,7 @@ export default function App() {
               onClick={() => {
                 // Editor.performAction(desc.title);
                 setSelectedActionTitle(desc.title);
-                setMapperMenuOpened(true);
-                setSelectMenuOpened(false);
+                setCurrentMenu(MenuType.CodeActionMapper);
               }}
             >
               {desc.title}
@@ -153,10 +148,10 @@ export default function App() {
       </Menu>
 
       <Menu
-        open={snippetMenuOpened}
-        onClose={() => setSnippetMenuOpened(false)}
+        open={currentMenu === MenuType.SnippetList}
+        onClose={() => setCurrentMenu(MenuType.None)}
         anchorReference="anchorPosition"
-        anchorPosition={anchorPosFromTL(snippetMenuPos)}
+        anchorPosition={anchorPosFromTL(menuPos)}
       >
         <MenuItem>Snippet Menu</MenuItem>
         {Editor.snippetDescriptions.map((desc) => {
@@ -164,7 +159,7 @@ export default function App() {
             <MenuItem
               onClick={() => {
                 // Editor.performAction(desc.title);
-                setSnippetMenuOpened(false);
+                setCurrentMenu(MenuType.None);
               }}
             >
               {desc.name}
@@ -174,10 +169,10 @@ export default function App() {
       </Menu>
 
       <Menu
-        open={customMenuOpened}
-        onClose={() => setCustomMenuOpened(false)}
+        open={currentMenu === MenuType.CustomList}
+        onClose={() => setCurrentMenu(MenuType.None)}
         anchorReference="anchorPosition"
-        anchorPosition={anchorPosFromTL(customMenuPos)}
+        anchorPosition={anchorPosFromTL(menuPos)}
       >
         <MenuItem>Custom Menu</MenuItem>
         {Editor.customDescriptions.map((desc) => {
@@ -185,9 +180,8 @@ export default function App() {
             <MenuItem
               onClick={() => {
                 // Editor.performCustomAction(desc);
-                setCustomMapperOpened(true);
+                setCurrentMenu(MenuType.CustomMapper);
                 setSelectedCustomActionTitle(desc.title);
-                setCustomMenuOpened(false);
               }}
             >
               {desc.title}
@@ -197,29 +191,26 @@ export default function App() {
       </Menu>
 
       <MapperMenu
-        open={customMapperOpened}
+        open={currentMenu === MenuType.CustomMapper}
         variables={selectedCustomAction?.variables}
         onSubmit={(vars: {}) => {
           Editor.performCustomAction(selectedCustomAction!, vars);
-
-          setCustomMapperOpened(false);
-
-          console.log(vars);
+          setCurrentMenu(MenuType.None);
         }}
         cancelHandle={() => {
-          setCustomMapperOpened(false);
+          setCurrentMenu(MenuType.None);
         }}
       ></MapperMenu>
 
       <MapperMenu
-        open={mapperMenuOpened}
+        open={currentMenu === MenuType.CodeActionMapper}
         variables={mapperMenuVars}
         onSubmit={(vars: string[]) => {
           Editor.performAction(selectedActionTitle, vars);
-          setMapperMenuOpened(false);
+          setCurrentMenu(MenuType.None);
         }}
         cancelHandle={() => {
-          setMapperMenuOpened(false);
+          setCurrentMenu(MenuType.None);
         }}
       ></MapperMenu>
       <DndProvider backend={HTML5Backend}>{treeBlock}</DndProvider>

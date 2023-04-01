@@ -1,5 +1,5 @@
 import React from "react";
-import { handleClickOutside } from "./Utilities";
+import { handleClickOutside } from "../Utilities";
 import { useEffect } from "react";
 
 export default function TokRenameField({

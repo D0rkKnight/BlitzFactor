@@ -1,7 +1,7 @@
 import React from "react";
 import { CSSProperties } from "react";
 import PropTypes from "prop-types";
-import { handleClickOutside } from "./Utilities";
+import { handleClickOutside } from "../Utilities";
 import { ClickAwayListener } from "@mui/material";
 
 export default function RadialMenu({

@@ -1,7 +1,6 @@
 import React from "react";
-import Token from "../token";
-import { TokenType } from "../tokenTypes";
-// import "./textColors.css";
+import Token from "../../token";
+import { TokenType } from "../../tokenTypes";
 
 /**
  *

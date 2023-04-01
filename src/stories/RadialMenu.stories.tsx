@@ -1,14 +1,14 @@
 import React from "react";
 
-import "../editor_frontend/style.scss";
-import RadialMenu from "../editor_frontend/RadialMenu";
+import "../editor_frontend/style/style.scss";
+import RadialMenu from "../editor_frontend/ContextMenu/RadialMenu";
 import RadialMenuDecorator from "./RadialMenuDecorator";
 import { ComponentStory } from "@storybook/react";
 
 import Select from "react-select";
 import { Menu } from "@mui/material";
 import MenuItem from "@mui/material/MenuItem";
-import MapperMenu from "../editor_frontend/MapperMenu";
+import MapperMenu from "../editor_frontend/ContextMenu/MapperMenu";
 
 export default {
   title: "Example/RadialMenu",

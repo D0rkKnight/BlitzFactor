@@ -1,5 +1,5 @@
 import React from "react";
-import "../editor_frontend/style.scss";
+import "../editor_frontend/style/style.scss";
 import App from "../editor_frontend/App";
 import tree1 from "./tree_jsons/tree1.json";
 

@@ -2,13 +2,13 @@ import React from "react";
 import Token from "../token";
 import Tokenizer from "../tokenizer";
 
-import "../editor_frontend/style.scss";
+import "../editor_frontend/style/style.scss";
 import { ComponentStory } from "@storybook/react";
 import superTree from "./tree_jsons/superTree.json";
 
 import Editor from "../editor_frontend/editor";
 import SyntaxTree from "../editor_frontend/SyntaxTree";
-import TokenFlow from "../editor_frontend/tokenFlow";
+import TokenFlow from "../editor_frontend/TokenFlow/tokenFlow";
 
 export default {
   title: "Example/Token",

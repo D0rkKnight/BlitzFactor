@@ -1,8 +1,7 @@
 import * as React from "react";
 
-import Editor from "./editor";
-import Highlighter from "./Highlighter";
-import Token from "../token";
+import Highlighter from "../Highlighter";
+import Token from "../../token";
 
 export default function TokenFlow({ tree }) {
   // Just increment this or something when we want to rerender

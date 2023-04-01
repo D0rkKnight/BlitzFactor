@@ -1,18 +1,18 @@
 import * as React from "react";
 import { useEffect } from "react";
-import Editor from "./editor";
+import Editor from "../editor";
 import { useDraggable } from "@dnd-kit/core";
-import { ItemTypes } from "./constants";
+import { ItemTypes } from "../constants";
 import { useDrag } from "react-dnd";
 import { useDrop } from "react-dnd";
 import { useRef } from "react";
-import Token from "../token";
-import Highlighter from "./Highlighter";
-import { TokenType } from "../tokenTypes";
+import Token from "../../token";
+import Highlighter from "../Highlighter";
+import { TokenType } from "../../tokenTypes";
 import TokRenameField from "./TokRenameField";
 
-import "./style.scss";
-import "./textColors.scss";
+import "../style/style.scss";
+import "../style/textColors.scss";
 import TokenText from "./TokenText";
 
 interface DragItem {

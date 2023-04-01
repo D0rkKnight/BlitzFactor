@@ -1,5 +1,5 @@
 import { TokenType } from "./tokenTypes";
-import TokenBlock from "./editor_frontend/tokenBlock";
+import TokenBlock from "./editor_frontend/TokenFlow/tokenBlock";
 import Editor from "./editor_frontend/editor";
 import React from "react";
 
