@@ -81,7 +81,7 @@ export default class Highlighter {
     }
 
     // Have editor update code actions menu
-    Editor.retrieveCodeActions(this.rightClickQueried);
+    Editor.retrieveActions(this.rightClickQueried);
   }
 
 }

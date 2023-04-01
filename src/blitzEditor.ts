@@ -1,9 +1,9 @@
 import path = require('path');
-import { getNonce, vscodeRangeFromToken, fillInSnippetVars, parseSnippet, varRegex } from './util';
+import { getNonce, vscodeRangeFromToken, fillInSnippetVars, getTabstops, varRegex, getSnippetVars } from './util';
 import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
-import CodeActionDescription from './CodeActionDescription';
+import { CodeActionDescription, SnippetDescription } from './ActionDescriptions';
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
@@ -21,6 +21,10 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	private codeActionCache: vscode.CodeAction[] = [];
 	private caDescCache: CodeActionDescription[] = [];
+	private snippetCache: vscode.SnippetString[] = [];
+	private snDescCache: SnippetDescription[] = [];
+
+	// private customActions: 
 
 	public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
 		webviewPanel.webview.options = {
@@ -58,18 +62,13 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				case 'renameToken':
 					this.renameToken(document, e.body.token, e.body.newName);
 					break;
-				case 'retrieveCodeActions':
-					const codeActionPromise = this.retrieveCodeActions(document, e.body.tokens);
-
-
-					codeActionPromise.then((codeActions: { actions: vscode.CodeAction[], descriptions: CodeActionDescription[]}) => {
-						this.codeActionCache = codeActions.actions;
-						this.caDescCache = codeActions.descriptions;
+				case 'retrieveActions':
+					this.fillActionCache(document, e.body.tokens).then(() => {
 
 						// Send the code actions back
 						webviewPanel.webview.postMessage({
-							type: 'codeActions',
-							body: this.caDescCache
+							type: 'sendActions',
+							body: {caDesc: this.caDescCache, snDesc: [{name: 'Test Snippet', snippet: 'This is a test snippet'}, {name: 'Test Snippet 2', snippet: 'This is a test snippet 2'}]}
 						});
 					});
 					break;
@@ -197,15 +196,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				const variables: string[] = [];
 
 				edits.forEach((edit) => {
-
-					// Look for entries that match the regex
-					parseSnippet(edit.newText, [varRegex[1]], (match: string) => {
-						if (variables.indexOf(match) === -1) {
-							variables.push(match);
-						}
-
-						return match;
-					});
+					const varsInEdit = getSnippetVars(edit.newText);
+					variables.push(...varsInEdit);
 				});
 				
 				return variables;
@@ -223,7 +215,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		return {actions: possibleActions, descriptions: descriptions};
 	}
 
-	async performAction(document: vscode.TextDocument, actionName: string, vars: any) {
+	async performAction(document: vscode.TextDocument, actionName: string, vars: {}) {
 		// Get action from cache
 		const action: vscode.CodeAction = this.codeActionCache.find((action: vscode.CodeAction) => action.title === actionName)!;
 		const description: CodeActionDescription = this.caDescCache.find((desc: CodeActionDescription) => desc.title === actionName)!;
@@ -257,14 +249,10 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 	}
 
-	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: any, postProcess?: () => void) {
+	async performActionRaw(document: vscode.TextDocument, action: vscode.CodeAction, description: CodeActionDescription, vars: {}, postProcess?: () => void) {
 		// Apply the edits (this needs to happen first)
 		const edit = action.edit as vscode.WorkspaceEdit;
 		const token = description.token;
-
-		// Add in some vars like the selection
-		const range = vscodeRangeFromToken(token);
-		vars['$TM_SELECTED_TEXT$'] = document.getText(range);
 
 		if (edit !== undefined) {
 
@@ -275,7 +263,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			textEdits.forEach((textEdit) => {
 				const [uri, edits] = textEdit;
 				edits.forEach((edit) => {
-					edit.newText = fillInSnippetVars(edit.newText, vars);
+					edit.newText = fillInSnippetVars(edit.newText, vars, document, token);
 				});
 			});
 
@@ -294,6 +282,33 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		// Some after the fact processing
 		if (postProcess !== undefined)
 				postProcess();
+	}
+
+	async fillActionCache(document: vscode.TextDocument, tokens: Token[]) {
+
+		const caPromise = this.retrieveCodeActions(document, tokens).then((out: {actions: vscode.CodeAction[], descriptions: CodeActionDescription[]}) =>  {
+			this.codeActionCache = out.actions;
+			this.caDescCache = out.descriptions;
+		});
+
+		const snippedPromise = this.retrieveSnippets(document, tokens).then((out: {snippets: vscode.SnippetString[], descriptions: SnippetDescription[]}) => {
+			this.snippetCache = out.snippets;
+			this.snDescCache = out.descriptions;
+		});
+
+		await caPromise;
+		return;
+	}
+
+	async retrieveSnippets(document: vscode.TextDocument, tokens: Token[]): Promise<{ snippets: vscode.SnippetString[], descriptions: SnippetDescription[]}> {
+
+		//
+		// const snippets = await vscode.commands.executeCommand('editor.action.insertSnippet');
+
+		console.log("This isn't going to work for a bit");
+		
+
+		return {snippets: [], descriptions: []};
 	}
 }
 

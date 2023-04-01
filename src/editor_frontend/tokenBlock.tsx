@@ -205,9 +205,6 @@ export default function TokenBlock({
   const onRightClick = (e) => {
     e.preventDefault();
     collapseParentCB();
-
-    // Kinda janky for now, cache the deepest highlighted token
-    Highlighter.setRightClickCacheFromHighlights();
   };
 
   const beginRename = () => {

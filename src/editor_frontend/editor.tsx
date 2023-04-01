@@ -1,7 +1,10 @@
 import Tokenizer from "../tokenizer";
 import SyntaxTree from "./SyntaxTree";
 import Token from "../token";
-import CodeActionDescription from "../CodeActionDescription";
+import {
+  CodeActionDescription,
+  SnippetDescription,
+} from "../ActionDescriptions";
 
 declare var acquireVsCodeApi: any;
 
@@ -31,6 +34,36 @@ export default class Editor {
   static tokenState = {
     tokens: [] as string[],
   };
+
+  static init() {
+    // Editor.lineSelectChangeCB.push((newSelectedLines: number[]) => {
+    //   var cloned = newSelectedLines.slice();
+    //   setSelectedLines(cloned);
+    // })
+
+    // // Put in key listeners for editor
+    // document.addEventListener('keydown', (event) => {
+    //   Editor.onKeyPress(event);
+    // });
+
+    // // Put in key listeners for editor
+    // document.addEventListener('keyup', (event) => {
+    //   Editor.onKeyUp(event);
+    // });
+
+    window.addEventListener("message", (event) => {
+      const message = event.data; // The JSON data our extension sent
+
+      switch (message.type) {
+        case "update":
+          Editor.onUpdate(message.tree);
+          break;
+        case "sendActions":
+          Editor.setActionCache(message.body);
+          break;
+      }
+    });
+  }
 
   static onUpdate(message: Token) {
     let filtered = Tokenizer.condenseTree(message);
@@ -79,19 +112,24 @@ export default class Editor {
     });
   }
 
-  static retrieveCodeActions(toks: Token[]) {
+  static retrieveActions(toks: Token[]) {
     vscode.postMessage({
-      type: "retrieveCodeActions",
+      type: "retrieveActions",
       body: {
         tokens: toks,
       },
     });
   }
 
-  static actionCache: CodeActionDescription[] = [];
+  static codeActionDescriptions: CodeActionDescription[] = [];
+  static snippetDescriptions: SnippetDescription[] = [];
 
-  static setCodeActionCache(actions: CodeActionDescription[]) {
-    this.actionCache = actions;
+  static setActionCache(actions: {
+    caDesc: CodeActionDescription[];
+    snDesc: SnippetDescription[];
+  }) {
+    this.codeActionDescriptions = actions.caDesc;
+    this.snippetDescriptions = actions.snDesc;
   }
 
   static performAction(actionName: string, vars: any) {
@@ -105,9 +143,10 @@ export default class Editor {
   }
 
   static getMapperMenuVars(actionName: string): string[] | undefined {
-    if (this.actionCache.length === 0) return [];
+    if (this.codeActionDescriptions.length === 0) return [];
 
-    return this.actionCache.find((action) => action.title === actionName)
-      ?.variables;
+    return this.codeActionDescriptions.find(
+      (action) => action.title === actionName
+    )?.variables;
   }
 }
