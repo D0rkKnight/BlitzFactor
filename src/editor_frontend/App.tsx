@@ -30,36 +30,8 @@ export default function App() {
       setTokens(cloned);
     });
 
-    // Editor.lineSelectChangeCB.push((newSelectedLines: number[]) => {
-    //   var cloned = newSelectedLines.slice();
-    //   setSelectedLines(cloned);
-    // })
-
-    // // Put in key listeners for editor
-    // document.addEventListener('keydown', (event) => {
-    //   Editor.onKeyPress(event);
-    // });
-
-    // // Put in key listeners for editor
-    // document.addEventListener('keyup', (event) => {
-    //   Editor.onKeyUp(event);
-    // });
-
     // Update display on update
-    window.addEventListener("message", (event) => {
-      const message = event.data; // The JSON data our extension sent
-
-      switch (message.type) {
-        case "update":
-          Editor.onUpdate(message.tree);
-          break;
-        case "codeActions":
-          Editor.setCodeActionCache(message.body);
-          break;
-      }
-    });
-
-    // Load everything now
+    Editor.init();
     Editor.requestUpdate();
   }, []);
 
@@ -79,15 +51,21 @@ export default function App() {
   const [mapperMenuOpened, setMapperMenuOpened] = React.useState(false);
   const [selectedActionTitle, setSelectedActionTitle] = React.useState("");
 
+  const [snippetMenuOpened, setSnippetMenuOpened] = React.useState(false);
+  const [snippetMenuPos, setSnippetMenuPos] = React.useState({ x: 0, y: 0 });
+
   let radialMenu = null as JSX.Element | null;
   if (radialMenuOpened) {
-    let txt = Highlighter.deepestToken?.text;
-
     // Generate the dropdown menu button
-    const onDropdownClick = (e) => {
-      setRadialMenuOpened(false);
-      setSelectMenuOpened(true);
-      setSelectMenuPos({ x: e.clientX, y: e.clientY });
+    const dropDownClickFactory = (
+      menuOpenSetter: (val: boolean) => void,
+      menuPosSetter: (val: { x: number; y: number }) => void
+    ) => {
+      return (e: React.MouseEvent) => {
+        setRadialMenuOpened(false);
+        menuOpenSetter(true);
+        menuPosSetter({ x: e.clientX, y: e.clientY });
+      };
     };
 
     radialMenu = (
@@ -98,8 +76,20 @@ export default function App() {
           setRadialMenuOpened(false);
         }}
       >
-        <Button onClick={onDropdownClick} variant={"contained"}>
+        <Button
+          onClick={dropDownClickFactory(setSelectMenuOpened, setSelectMenuPos)}
+          variant={"contained"}
+        >
           Show Code Actions
+        </Button>
+        <Button
+          onClick={dropDownClickFactory(
+            setSnippetMenuOpened,
+            setSnippetMenuPos
+          )}
+          variant={"contained"}
+        >
+          Show Snippets
         </Button>
       </RadialMenu>
     );
@@ -110,6 +100,9 @@ export default function App() {
     e.preventDefault();
     setRadialMenuOpened(true);
     setRadialMenuPos({ x: e.clientX, y: e.clientY });
+
+    // Kinda janky for now, cache the deepest highlighted token
+    Highlighter.setRightClickCacheFromHighlights();
   }
 
   const anchorPosFromTL = (pos: { x: number; y: number }) => {
@@ -127,7 +120,8 @@ export default function App() {
         anchorReference="anchorPosition"
         anchorPosition={anchorPosFromTL(selectMenuPos)}
       >
-        {Editor.actionCache.map((desc) => {
+        <MenuItem>Code Actions</MenuItem>
+        {Editor.codeActionDescriptions.map((desc) => {
           return (
             <MenuItem
               onClick={() => {
@@ -142,6 +136,28 @@ export default function App() {
           );
         })}
       </Menu>
+
+      <Menu
+        open={snippetMenuOpened}
+        onClose={() => setSnippetMenuOpened(false)}
+        anchorReference="anchorPosition"
+        anchorPosition={anchorPosFromTL(snippetMenuPos)}
+      >
+        <MenuItem>Snippet Menu</MenuItem>
+        {Editor.snippetDescriptions.map((desc) => {
+          return (
+            <MenuItem
+              onClick={() => {
+                // Editor.performAction(desc.title);
+                setSnippetMenuOpened(false);
+              }}
+            >
+              {desc.name}
+            </MenuItem>
+          );
+        })}
+      </Menu>
+
       <MapperMenu
         open={mapperMenuOpened}
         variables={mapperMenuVars}
