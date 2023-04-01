@@ -4,6 +4,7 @@ import * as vscode from 'vscode';
 import Tokenizer from './tokenizer';
 import Token from './token';
 import { CodeActionDescription, SnippetDescription } from './ActionDescriptions';
+import CustomAction from './CustomAction';
 
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.BlitzEditorProvider = void 0;
@@ -24,7 +25,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	private snippetCache: vscode.SnippetString[] = [];
 	private snDescCache: SnippetDescription[] = [];
 
-	// private customActions: 
+	// Execute anything with these :3
+	private customActions: CustomAction[] = [];
 
 	public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
 		webviewPanel.webview.options = {
@@ -68,7 +70,11 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 						// Send the code actions back
 						webviewPanel.webview.postMessage({
 							type: 'sendActions',
-							body: {caDesc: this.caDescCache, snDesc: [{name: 'Test Snippet', snippet: 'This is a test snippet'}, {name: 'Test Snippet 2', snippet: 'This is a test snippet 2'}]}
+							body: {
+								caDesc: this.caDescCache, 
+								snDesc: [{name: 'Test Snippet', snippet: 'This is a test snippet'}, {name: 'Test Snippet 2', snippet: 'This is a test snippet 2'}],
+								customDesc: this.customActions.map(ca => ca.getDescription())
+							}
 						});
 					});
 					break;
@@ -76,9 +82,16 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 					// May be async
 					this.performAction(document, e.body.actionName, e.body.vars);
 					break;
+				case 'performCustomAction':
+					// May be async
+					this.performCustomAction(document, e.body.customAction.title, e.body.variables, e.body.tokens);
+					break;
 			}
 		}
 		);
+
+		// Generate custom actions
+		this.customActions = this.generateCustomActions();
 
 		// Print out hello!
 		console.log('Blitz Editor accessed');
@@ -310,6 +323,31 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 		return {snippets: [], descriptions: []};
 	}
+
+	generateCustomActions(): CustomAction[] {
+
+		const customActions: CustomAction[] = [];
+
+		customActions.push( new CustomAction("Action 1", ["var1", "var2"], (doc: vscode.TextDocument, tok: Token, variables: {}) => {
+			console.log(variables["var1"]);
+			return undefined;
+		}));
+	
+		customActions.push( new CustomAction("Action 2", undefined, (doc: vscode.TextDocument, tok: Token, variables: {}) => {
+			console.log("Action 1");
+			return undefined;
+		}));
+
+		return customActions;
+
+
+	}
+
+	async performCustomAction(document: vscode.TextDocument, actionName: string, vars: {}, tok: Token) {
+		const action = this.customActions.find((action) => action.title === actionName)!;
+		action.execute(document, tok, vars);
+	}
+
 }
 
 exports.BlitzEditorProvider = BlitzEditorProvider;

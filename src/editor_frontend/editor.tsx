@@ -5,6 +5,8 @@ import {
   CodeActionDescription,
   SnippetDescription,
 } from "../ActionDescriptions";
+import { CustomActionDescription } from "../CustomAction";
+import Highlighter from "./Highlighter";
 
 declare var acquireVsCodeApi: any;
 
@@ -25,9 +27,6 @@ if (typeof acquireVsCodeApi !== "undefined") {
 export default class Editor {
   // Create callback list (hook layer for vscode incoming data)
   static tokenChangeCB: Function[] = [];
-  // static lineSelectChangeCB: Function[] = [];
-  // static selectedLines: number[] = [];
-
   static syntaxTree: SyntaxTree | null = null;
 
   // This is pretty important
@@ -123,13 +122,16 @@ export default class Editor {
 
   static codeActionDescriptions: CodeActionDescription[] = [];
   static snippetDescriptions: SnippetDescription[] = [];
+  static customDescriptions: CustomActionDescription[] = [];
 
   static setActionCache(actions: {
     caDesc: CodeActionDescription[];
     snDesc: SnippetDescription[];
+    customDesc: CustomActionDescription[];
   }) {
     this.codeActionDescriptions = actions.caDesc;
     this.snippetDescriptions = actions.snDesc;
+    this.customDescriptions = actions.customDesc;
   }
 
   static performAction(actionName: string, vars: any) {
@@ -138,6 +140,17 @@ export default class Editor {
       body: {
         actionName: actionName,
         vars: vars,
+      },
+    });
+  }
+
+  static performCustomAction(cu: CustomActionDescription, vars: {}) {
+    vscode.postMessage({
+      type: "performCustomAction",
+      body: {
+        customAction: cu,
+        tokens: [Highlighter.rightClickQueried],
+        variables: vars,
       },
     });
   }

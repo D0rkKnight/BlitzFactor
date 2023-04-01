@@ -54,6 +54,12 @@ export default function App() {
   const [snippetMenuOpened, setSnippetMenuOpened] = React.useState(false);
   const [snippetMenuPos, setSnippetMenuPos] = React.useState({ x: 0, y: 0 });
 
+  const [customMenuOpened, setCustomMenuOpened] = React.useState(false);
+  const [customMenuPos, setCustomMenuPos] = React.useState({ x: 0, y: 0 });
+  const [customMapperOpened, setCustomMapperOpened] = React.useState(false);
+  const [selectedCustomActionTitle, setSelectedCustomActionTitle] =
+    React.useState("");
+
   let radialMenu = null as JSX.Element | null;
   if (radialMenuOpened) {
     // Generate the dropdown menu button
@@ -91,6 +97,12 @@ export default function App() {
         >
           Show Snippets
         </Button>
+        <Button
+          onClick={dropDownClickFactory(setCustomMenuOpened, setCustomMenuPos)}
+          variant={"contained"}
+        >
+          Show Custom
+        </Button>
       </RadialMenu>
     );
   }
@@ -110,6 +122,9 @@ export default function App() {
   };
 
   const mapperMenuVars = Editor.getMapperMenuVars(selectedActionTitle);
+  const selectedCustomAction = Editor.customDescriptions.find(
+    (custom) => custom.title === selectedCustomActionTitle
+  );
 
   return (
     <div onContextMenu={onContextMenu}>
@@ -158,14 +173,50 @@ export default function App() {
         })}
       </Menu>
 
+      <Menu
+        open={customMenuOpened}
+        onClose={() => setCustomMenuOpened(false)}
+        anchorReference="anchorPosition"
+        anchorPosition={anchorPosFromTL(customMenuPos)}
+      >
+        <MenuItem>Custom Menu</MenuItem>
+        {Editor.customDescriptions.map((desc) => {
+          return (
+            <MenuItem
+              onClick={() => {
+                // Editor.performCustomAction(desc);
+                setCustomMapperOpened(true);
+                setSelectedCustomActionTitle(desc.title);
+                setCustomMenuOpened(false);
+              }}
+            >
+              {desc.title}
+            </MenuItem>
+          );
+        })}
+      </Menu>
+
+      <MapperMenu
+        open={customMapperOpened}
+        variables={selectedCustomAction?.variables}
+        onSubmit={(vars: {}) => {
+          Editor.performCustomAction(selectedCustomAction!, vars);
+
+          setCustomMapperOpened(false);
+
+          console.log(vars);
+        }}
+        cancelHandle={() => {
+          setCustomMapperOpened(false);
+        }}
+      ></MapperMenu>
+
       <MapperMenu
         open={mapperMenuOpened}
         variables={mapperMenuVars}
-        onSubmit={(vars: any) => {
+        onSubmit={(vars: string[]) => {
           Editor.performAction(selectedActionTitle, vars);
           setMapperMenuOpened(false);
-
-          console.log(vars);
         }}
         cancelHandle={() => {
           setMapperMenuOpened(false);
