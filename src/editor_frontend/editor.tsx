@@ -160,6 +160,6 @@ export default class Editor {
 
     return this.codeActionDescriptions.find(
       (action) => action.title === actionName
-    )?.variables;
+    )?.vars;
   }
 }

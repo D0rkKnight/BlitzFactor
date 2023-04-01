@@ -4,15 +4,15 @@
 // import { Menu, MenuItem } from "@mui/material";
 // import Editor from "../editor";
 
-// export default function ListMenu({ open }) {
+// export default function ListMenu({ open, title, setCurrentMenu, menuPos }) {
 //   return (
 //     <Menu
 //       open={open}
-//       onClose={() => setCurrentMenu(MenuType.None)}
+//       onClose={setCurrentMenu}
 //       anchorReference="anchorPosition"
 //       anchorPosition={anchorPosFromTL(menuPos)}
 //     >
-//       <MenuItem>Code Actions</MenuItem>
+//       <MenuItem>{title}</MenuItem>
 //       {Editor.codeActionDescriptions.map((desc) => {
 //         return (
 //           <MenuItem
@@ -29,3 +29,7 @@
 //     </Menu>
 //   );
 // }
+
+// const anchorPosFromTL = (pos: { x: number; y: number }) => {
+//   return { top: pos.y, left: pos.x };
+// };

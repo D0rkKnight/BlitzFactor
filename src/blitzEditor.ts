@@ -20,13 +20,28 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	constructor(private readonly context: vscode.ExtensionContext) { }
 
-	private codeActionCache: vscode.CodeAction[] = [];
-	private caDescCache: CodeActionDescription[] = [];
-	private snippetCache: string[] = []; // Just use strings for now
-	private snDescCache: SnippetDescription[] = [];
+	private actionCache: {
+		ca: {
+			v: vscode.CodeAction[],
+			desc: CodeActionDescription[]
+		},
+		sn: {
+			v: string[],
+			desc: SnippetDescription[]
+		},
+		custom: CustomAction[]
+	} = {
+		ca: {
+			v: [],
+			desc: []
+		},
+		sn: {
+			v: [],
+			desc: []
+		},
+		custom: []
+	}
 
-	// Execute anything with these :3
-	private customActions: CustomAction[] = [];
 
 	public resolveCustomTextEditor(document: vscode.TextDocument, webviewPanel: vscode.WebviewPanel, token: vscode.CancellationToken): void {
 		webviewPanel.webview.options = {
@@ -71,9 +86,9 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 						webviewPanel.webview.postMessage({
 							type: 'sendActions',
 							body: {
-								caDesc: this.caDescCache, 
-								snDesc: this.snDescCache,
-								customDesc: this.customActions.map(ca => ca.getDescription())
+								caDesc: this.actionCache.ca.desc, 
+								snDesc: this.actionCache.sn.desc,
+								customDesc: this.actionCache.custom.map(ca => ca.getDescription())
 							}
 						});
 					});
@@ -91,7 +106,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		);
 
 		// Generate custom actions
-		this.customActions = this.generateCustomActions();
+		this.actionCache.custom = this.generateCustomActions();
 
 		// Print out hello!
 		console.log('Blitz Editor accessed');
@@ -220,7 +235,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		const descriptions: CodeActionDescription[] = possibleActions.map((action: vscode.CodeAction, index: number) => {
 			return {
 				title: action.title,
-				variables: snippetVars[index],
+				vars: snippetVars[index],
 				token: tokens[0] // Just use the first token for reference for now
 			}
 		});
@@ -230,8 +245,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	async performAction(document: vscode.TextDocument, actionName: string, vars: {}) {
 		// Get action from cache
-		const action: vscode.CodeAction = this.codeActionCache.find((action: vscode.CodeAction) => action.title === actionName)!;
-		const description: CodeActionDescription = this.caDescCache.find((desc: CodeActionDescription) => desc.title === actionName)!;
+		const action: vscode.CodeAction = this.actionCache.ca.v.find((action: vscode.CodeAction) => action.title === actionName)!;
+		const description: CodeActionDescription = this.actionCache.ca.desc.find((desc: CodeActionDescription) => desc.title === actionName)!;
 
 		// Typescript refactors need to be resolved before their edits are exposed
 		if (action.command?.command.startsWith('_typescript')) {
@@ -300,13 +315,13 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	async fillActionCache(document: vscode.TextDocument, tokens: Token[]) {
 
 		const caPromise = this.retrieveCodeActions(document, tokens).then((out: {actions: vscode.CodeAction[], descriptions: CodeActionDescription[]}) =>  {
-			this.codeActionCache = out.actions;
-			this.caDescCache = out.descriptions;
+			this.actionCache.ca.v = out.actions;
+			this.actionCache.ca.desc = out.descriptions;
 		});
 
 		const snippetPromise = this.retrieveSnippets(document, tokens).then((out: {snippets: string[], descriptions: SnippetDescription[]}) => {
-			this.snippetCache = out.snippets;
-			this.snDescCache = out.descriptions;
+			this.actionCache.sn.v = out.snippets;
+			this.actionCache.sn.desc = out.descriptions;
 		});
 
 		await caPromise;
@@ -387,7 +402,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	}
 
 	async performCustomAction(document: vscode.TextDocument, actionName: string, vars: {}, tok: Token) {
-		const action = this.customActions.find((action) => action.title === actionName)!;
+		const action = this.actionCache.custom.find((action) => action.title === actionName)!;
 		const edit: vscode.WorkspaceEdit | undefined = await action.execute(document, tok, vars);
 
 		if (edit !== undefined) {
