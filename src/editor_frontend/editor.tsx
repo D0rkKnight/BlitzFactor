@@ -120,12 +120,12 @@ export default class Editor {
     });
   }
 
-  static codeActionDescriptions: CodeActionDescription[] = [];
+  static codeActionDescriptions: CustomActionDescription[] = [];
   static snippetDescriptions: SnippetDescription[] = [];
   static customDescriptions: CustomActionDescription[] = [];
 
   static setActionCache(actions: {
-    caDesc: CodeActionDescription[];
+    caDesc: CustomActionDescription[];
     snDesc: SnippetDescription[];
     customDesc: CustomActionDescription[];
   }) {
@@ -134,12 +134,13 @@ export default class Editor {
     this.customDescriptions = actions.customDesc;
   }
 
-  static performAction(actionName: string, vars: any) {
+  static performAction(actionName: string, vars: any, tokens: Token[]) {
     vscode.postMessage({
       type: "performAction",
       body: {
         actionName: actionName,
         vars: vars,
+        toks: tokens,
       },
     });
   }
@@ -160,6 +161,6 @@ export default class Editor {
 
     return this.codeActionDescriptions.find(
       (action) => action.title === actionName
-    )?.vars;
+    )?.variables;
   }
 }

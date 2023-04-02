@@ -1,6 +1,7 @@
 import * as vscode from 'vscode';
 import Token from './token';
 import TabStops from 'tabstops';
+import { TokenType } from './tokenTypes';
 
 export function getNonce() {
 	let text = '';
@@ -17,7 +18,7 @@ export function vscodeRangeFromToken(token: Token) {
 
 export const varRegex = [/\$[a-zA-Z0-9_:]*\$/g, /\${[a-zA-Z0-9_:]*}/g];
 
-export function fillInSnippetVars(str: string, vars: {}, document: vscode.TextDocument, token: Token): string {
+export function fillInSnippetVars(str: string, vars: {}, document: vscode.TextDocument, token: Token | undefined): string {
 	const tabstops = getTabstops(str)
 
 	for (const key in vars) {
@@ -58,7 +59,13 @@ export function getTabstops(snippet: string) {
 	return tabstops;
 }
 
-function envVars(document: vscode.TextDocument, token: Token) {
+function envVars(document: vscode.TextDocument, token: Token | undefined) {
+
+	if (token === undefined) {
+		console.log("Token is undefined, this is bad");
+		token = new Token(TokenType.other, "error", [0, 0], [0, 0], "ERROR", [], 0);
+	}
+
 	return {
 		TM_SELECTED_TEXT: token.text, // Huh I guess this works
 		TM_CURRENT_LINE: 'current line',

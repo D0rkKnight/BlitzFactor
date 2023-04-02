@@ -206,7 +206,11 @@ export default function App() {
         open={currentMenu === MenuType.CodeActionMapper}
         variables={mapperMenuVars}
         onSubmit={(vars: string[]) => {
-          Editor.performAction(selectedActionTitle, vars);
+          Editor.performAction(
+            selectedActionTitle,
+            vars,
+            Highlighter.rightClickQueried
+          );
           setCurrentMenu(MenuType.None);
         }}
         cancelHandle={() => {

@@ -1,13 +1,15 @@
 import Token from './token';
 import * as vscode from 'vscode';
 
+type CodeActionCB = (doc: vscode.TextDocument, token: Token | undefined, variables: { }) => Promise<vscode.WorkspaceEdit | undefined>;
+
 export default class CustomAction {
 
     public title: string;
     public variables: string[] | undefined;
-    public executeCB: (doc: vscode.TextDocument, token: Token, {}) => Promise<vscode.WorkspaceEdit | undefined>;
+    public executeCB: CodeActionCB;
 
-    constructor(title: string, variables: string[] | undefined, executeCB: (doc: vscode.TextDocument, token: Token, {}) => Promise<vscode.WorkspaceEdit | undefined>) {
+    constructor(title: string, variables: string[] | undefined, executeCB: CodeActionCB) {
         this.title = title;
         this.variables = variables;
         this.executeCB = executeCB;
@@ -20,7 +22,7 @@ export default class CustomAction {
         };
     }
 
-    public async execute(doc: vscode.TextDocument, token: Token, variables: {}): Promise<vscode.WorkspaceEdit | undefined> {
+    public async execute(doc: vscode.TextDocument, token: Token | undefined, variables: {}): Promise<vscode.WorkspaceEdit | undefined> {
         return await this.executeCB(doc, token, variables);
     }
 

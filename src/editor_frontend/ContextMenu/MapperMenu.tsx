@@ -5,7 +5,7 @@ import { handleClickOutside } from "../Utilities";
 
 export default function MapperMenu({
   open = true,
-  variables = ["Test Var 1", "Test Var 2"],
+  variables = ["Test Var 1", "Test Var 2", "YOU GAVE UNDEFINED VARIABLES"],
   onSubmit = (vars: string[]) => {},
   cancelHandle = () => {},
 }) {
