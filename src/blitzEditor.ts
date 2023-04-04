@@ -22,17 +22,11 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 
 	private actionCache: {
 		ca: CustomAction[],
-		sn: {
-			v: string[],
-			desc: SnippetDescription[]
-		},
+		sn: CustomAction[],
 		custom: CustomAction[]
 	} = {
 		ca: [],
-		sn: {
-			v: [],
-			desc: []
-		},
+		sn: [],
 		custom: []
 	}
 
@@ -81,7 +75,7 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 							type: 'sendActions',
 							body: {
 								caDesc: this.actionCache.ca.map(ca => ca.getDescription()), 
-								snDesc: this.actionCache.sn.desc,
+								snDesc: this.actionCache.sn.map(ca => ca.getDescription()),
 								customDesc: this.actionCache.custom.map(ca => ca.getDescription())
 							}
 						});
@@ -301,8 +295,6 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 
 		// Command that gets run after
-		// TODO: For typescript refactors, this jumps to the refactor location.
-		// ^ This is undesirable.
 		if (action.command !== undefined) {
 			let command = action.command.command;
 			let args = action.command.arguments;
@@ -325,9 +317,8 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 			this.actionCache.ca = actions;
 		});
 
-		const snippetPromise = this.retrieveSnippets(document, tokens).then((out: {snippets: string[], descriptions: SnippetDescription[]}) => {
-			this.actionCache.sn.v = out.snippets;
-			this.actionCache.sn.desc = out.descriptions;
+		const snippetPromise = this.retrieveSnippets(document, tokens).then((snippets: CustomAction[]) => {
+			this.actionCache.sn = snippets;
 		});
 
 		await caPromise;
@@ -341,17 +332,16 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 	 * @param tokens 
 	 * @returns 
 	 */
-	async retrieveSnippets(document: vscode.TextDocument, tokens: Token[]): Promise<{ snippets: string[], descriptions: SnippetDescription[]}> {
+	async retrieveSnippets(document: vscode.TextDocument, tokens: Token[]): Promise<CustomAction[]> {
 
 		//
 		// const snippets = await vscode.commands.executeCommand('editor.action.insertSnippet');
-
-		console.log("This isn't going to work for a bit");
 
 		const completions: vscode.CompletionList = await vscode.commands.executeCommand('vscode.executeCompletionItemProvider', document.uri, new vscode.Position(0, 0), 'a'); // Get 10 elements
 		
 		const descriptions = [] as SnippetDescription[];
 		const snippets = [] as string[];
+		const customActions = [] as CustomAction[];
 		completions.items.forEach(element => {
 			if (element.insertText === undefined)
 				return;
@@ -368,15 +358,24 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 				vars: getSnippetVars(insertText),
 				snippet: element.insertText as string,
 			});
+
+			customActions.push(new CustomAction(element.label as string, getSnippetVars(insertText), async (doc: vscode.TextDocument, tok: Token | undefined, variables: {}) => {
+
+				// Not built yet
+				console.error("Not built yet");
+
+				return undefined;
+			}));
 		});
 
 		// Cull both lists to size 10
 		if (snippets.length > 10) {
 			snippets.splice(10, snippets.length - 10);
 			descriptions.splice(10, descriptions.length - 10);
+			customActions.splice(10, customActions.length - 10);
 		}
 
-		return {snippets: snippets, descriptions: descriptions};
+		return customActions;
 	}
 
 	generateCustomActions(): CustomAction[] {

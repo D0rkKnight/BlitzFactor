@@ -162,7 +162,7 @@ export default function App() {
                 setCurrentMenu(MenuType.None);
               }}
             >
-              {desc.name}
+              {desc.title}
             </MenuItem>
           );
         })}

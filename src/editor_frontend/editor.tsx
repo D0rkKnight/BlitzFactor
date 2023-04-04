@@ -121,12 +121,12 @@ export default class Editor {
   }
 
   static codeActionDescriptions: CustomActionDescription[] = [];
-  static snippetDescriptions: SnippetDescription[] = [];
+  static snippetDescriptions: CustomActionDescription[] = [];
   static customDescriptions: CustomActionDescription[] = [];
 
   static setActionCache(actions: {
     caDesc: CustomActionDescription[];
-    snDesc: SnippetDescription[];
+    snDesc: CustomActionDescription[];
     customDesc: CustomActionDescription[];
   }) {
     this.codeActionDescriptions = actions.caDesc;
