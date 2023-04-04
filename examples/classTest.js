@@ -1,6 +1,6 @@
 export default class Test {
 
-    Rename = 'field';
+    Field = 'field';
 
     constructor() {
         console.log('Test class');
@@ -9,4 +9,6 @@ export default class Test {
     foo() {
         console.log('foo');
     }
+
+
 }

@@ -301,12 +301,17 @@ export class BlitzEditorProvider implements vscode.CustomTextEditorProvider {
 		}
 
 		// Command that gets run after
+		// TODO: For typescript refactors, this jumps to the refactor location.
+		// ^ This is undesirable.
 		if (action.command !== undefined) {
 			let command = action.command.command;
 			let args = action.command.arguments;
 			let allArgs = [command].concat(args!);
 
-			await vscode.commands.executeCommand.apply(null, allArgs as any);
+			// If the command is a telemetry report we can just ignore it
+			// Since the telemetry call is whats causing the jump somehow
+			if (command === "_typescript.didApplyRefactoring") {}
+			else await vscode.commands.executeCommand.apply(null, allArgs as any);
 		}
 
 		// Some after the fact processing
