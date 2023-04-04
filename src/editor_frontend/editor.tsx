@@ -120,18 +120,22 @@ export default class Editor {
     });
   }
 
-  static codeActionDescriptions: CustomActionDescription[] = [];
-  static snippetDescriptions: CustomActionDescription[] = [];
-  static customDescriptions: CustomActionDescription[] = [];
+  static actionDescriptions: {
+    caDesc: CustomActionDescription[];
+    snDesc: CustomActionDescription[];
+    customDesc: CustomActionDescription[];
+  } = {
+    caDesc: [],
+    snDesc: [],
+    customDesc: [],
+  };
 
   static setActionCache(actions: {
     caDesc: CustomActionDescription[];
     snDesc: CustomActionDescription[];
     customDesc: CustomActionDescription[];
   }) {
-    this.codeActionDescriptions = actions.caDesc;
-    this.snippetDescriptions = actions.snDesc;
-    this.customDescriptions = actions.customDesc;
+    this.actionDescriptions = actions;
   }
 
   static performAction(actionName: string, vars: any, tokens: Token[]) {
@@ -156,11 +160,32 @@ export default class Editor {
     });
   }
 
-  static getMapperMenuVars(actionName: string): string[] | undefined {
-    if (this.codeActionDescriptions.length === 0) return [];
+  static getActionDescription(
+    actionName: string,
+    type: ActionType
+  ): CustomActionDescription | undefined {
+    let actionGroup: CustomActionDescription[] = [];
 
-    return this.codeActionDescriptions.find(
-      (action) => action.title === actionName
-    )?.variables;
+    switch (type) {
+      case ActionType.CodeAction:
+        actionGroup = this.actionDescriptions.caDesc;
+        break;
+      case ActionType.Snippet:
+        actionGroup = this.actionDescriptions.snDesc;
+        break;
+      case ActionType.CustomAction:
+        actionGroup = this.actionDescriptions.customDesc;
+        break;
+    }
+
+    if (actionGroup.length === 0) return undefined;
+
+    return actionGroup.find((action) => action.title === actionName);
   }
+}
+
+export enum ActionType {
+  CodeAction,
+  Snippet,
+  CustomAction,
 }

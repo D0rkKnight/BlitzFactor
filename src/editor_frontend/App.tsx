@@ -2,7 +2,7 @@ import * as React from "react";
 import { DndProvider } from "react-dnd";
 import { HTML5Backend } from "react-dnd-html5-backend";
 
-import Editor from "./editor";
+import Editor, { ActionType } from "./editor";
 import TokenBlock from "./TokenFlow/tokenBlock";
 import TokenFlow from "./TokenFlow/tokenFlow";
 import Token from "../token";
@@ -50,10 +50,7 @@ export default function App() {
   }
 
   // States for menus
-  const [selectedCustomActionTitle, setSelectedCustomActionTitle] =
-    React.useState("");
   const [selectedActionTitle, setSelectedActionTitle] = React.useState("");
-
   const [currentMenu, setCurrentMenu] = React.useState(MenuType.None);
   const [menuPos, setMenuPos] = React.useState({ x: 0, y: 0 });
 
@@ -117,10 +114,25 @@ export default function App() {
     return { top: pos.y, left: pos.x };
   };
 
-  const mapperMenuVars = Editor.getMapperMenuVars(selectedActionTitle);
-  const selectedCustomAction = Editor.customDescriptions.find(
-    (custom) => custom.title === selectedCustomActionTitle
+  // Get the kind of action query depending on the menu
+  const actionType: ActionType = (() => {
+    switch (currentMenu) {
+      case MenuType.CodeActionList:
+        return ActionType.CodeAction;
+      case MenuType.SnippetList:
+        return ActionType.Snippet;
+      case MenuType.CustomList:
+        return ActionType.CustomAction;
+    }
+
+    return ActionType.CodeAction;
+  })();
+
+  const selectedCustomAction = Editor.getActionDescription(
+    selectedActionTitle,
+    actionType
   );
+  const actionVars = selectedCustomAction?.variables; // List of strings
 
   return (
     <div onContextMenu={onContextMenu}>
@@ -132,7 +144,7 @@ export default function App() {
         anchorPosition={anchorPosFromTL(menuPos)}
       >
         <MenuItem>Code Actions</MenuItem>
-        {Editor.codeActionDescriptions.map((desc) => {
+        {Editor.actionDescriptions.caDesc.map((desc) => {
           return (
             <MenuItem
               onClick={() => {
@@ -154,7 +166,7 @@ export default function App() {
         anchorPosition={anchorPosFromTL(menuPos)}
       >
         <MenuItem>Snippet Menu</MenuItem>
-        {Editor.snippetDescriptions.map((desc) => {
+        {Editor.actionDescriptions.snDesc.map((desc) => {
           return (
             <MenuItem
               onClick={() => {
@@ -175,13 +187,13 @@ export default function App() {
         anchorPosition={anchorPosFromTL(menuPos)}
       >
         <MenuItem>Custom Menu</MenuItem>
-        {Editor.customDescriptions.map((desc) => {
+        {Editor.actionDescriptions.customDesc.map((desc) => {
           return (
             <MenuItem
               onClick={() => {
                 // Editor.performCustomAction(desc);
                 setCurrentMenu(MenuType.CustomMapper);
-                setSelectedCustomActionTitle(desc.title);
+                setSelectedActionTitle(desc.title);
               }}
             >
               {desc.title}
@@ -192,7 +204,7 @@ export default function App() {
 
       <MapperMenu
         open={currentMenu === MenuType.CustomMapper}
-        variables={selectedCustomAction?.variables}
+        variables={actionVars}
         onSubmit={(vars: {}) => {
           Editor.performCustomAction(selectedCustomAction!, vars);
           setCurrentMenu(MenuType.None);
@@ -204,7 +216,7 @@ export default function App() {
 
       <MapperMenu
         open={currentMenu === MenuType.CodeActionMapper}
-        variables={mapperMenuVars}
+        variables={actionVars}
         onSubmit={(vars: string[]) => {
           Editor.performAction(
             selectedActionTitle,
